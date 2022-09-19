@@ -56,20 +56,29 @@ fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: R
 }
 
 fn set_up_chess_pieces(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
+    let first = board.first_element;
+    let last = board.last_element;
     spawn_piece(
-        ChessPiece::new(3, 1, ChessColor::WHITE, PieceType::PAWN),
+        ChessPiece::new(first,last, ChessColor::BLACK, PieceType::ROOK),
+        commands.borrow_mut(),
+        &assets,
+        &board,
+    );
+
+    spawn_piece(
+        ChessPiece::new(first + 3, first + 1, ChessColor::WHITE, PieceType::PAWN),
         commands.borrow_mut(),
         &assets,
         &board,
     );
     spawn_piece(
-        ChessPiece::new(4, 1, ChessColor::WHITE, PieceType::PAWN),
+        ChessPiece::new(first + 4, first + 1, ChessColor::WHITE, PieceType::PAWN),
         commands.borrow_mut(),
         &assets,
         &board,
     );
     spawn_piece(
-        ChessPiece::new(4, 6, ChessColor::BLACK, PieceType::PAWN),
+        ChessPiece::new(first + 4, last - 1, ChessColor::BLACK, PieceType::PAWN),
         commands.borrow_mut(),
         &assets,
         &board,

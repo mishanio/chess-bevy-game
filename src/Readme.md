@@ -1,8 +1,9 @@
-For rapid development:
-
+Run command 
 cargo run --features bevy/dynamic
 
-cargo watch -q -c -x 'run --features bevy/dynamic'
+For development
+Run with stacktrace on error and reload on save changes:
+RUST_BACKTRACE=1 cargo watch -q -c -x 'run --features bevy/dynamic'
 
 Install Cargo Watch
 cargo install cargo-watch

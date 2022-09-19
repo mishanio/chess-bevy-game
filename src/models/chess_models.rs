@@ -1,4 +1,9 @@
-use bevy::{prelude::*, utils::HashMap};
+use std::cell::Cell;
+
+use bevy::{
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 
 use crate::models::common_resources::{Board, CellPosition};
 
@@ -64,13 +69,14 @@ impl ChessPiece {
         board: &Board,
         pieces: &Vec<&ChessPiece>,
     ) -> Vec<CellPosition> {
+        let (ally_cells, enemy_cells) = self.split_pieces_by_color(pieces);
+
         return match self.piece_type {
             PieceType::PAWN => {
-                return self.available_cells_for_pawn(board, pieces);
+                return self.available_cells_for_pawn(board, &ally_cells, &enemy_cells);
             }
             PieceType::ROOK => {
-                return vec![];
-                // return vec![cell_1, cell_2];
+                return self.available_cells_for_rook(board, &ally_cells, &enemy_cells)
             }
             _ => vec![],
         };
@@ -79,11 +85,10 @@ impl ChessPiece {
     fn available_cells_for_pawn(
         &self,
         board: &Board,
-        pieces: &Vec<&ChessPiece>,
+        ally_cells: &HashSet<CellPosition>,
+        enemy_cells: &HashSet<CellPosition>,
     ) -> Vec<CellPosition> {
         let mut available_cells = Vec::new();
-        let (allies, enemies) = self.split_pieces_by_color(pieces);
-
         let is_first_move = (self.color == ChessColor::WHITE
             && self.pos.j == board.first_element + 1)
             || (self.color == ChessColor::BLACK && self.pos.j == board.last_element - 1);
@@ -96,14 +101,14 @@ impl ChessPiece {
             i: self.pos.i,
             j: self.pos.j + 1 * direction_cooficient,
         };
-        if !allies.contains_key(&cell_1) && !enemies.contains_key(&cell_1) {
+        if !ally_cells.contains(&cell_1) && !enemy_cells.contains(&cell_1) {
             available_cells.push(cell_1);
         }
         let cell_2 = CellPosition {
             i: self.pos.i,
             j: self.pos.j + 2 * direction_cooficient,
         };
-        if is_first_move && !allies.contains_key(&cell_2) && !enemies.contains_key(&cell_2) {
+        if is_first_move && !ally_cells.contains(&cell_2) && !enemy_cells.contains(&cell_2) {
             available_cells.push(cell_2);
         }
         let cell_enemy_right = CellPosition {
@@ -114,31 +119,91 @@ impl ChessPiece {
             i: self.pos.i - 1,
             j: self.pos.j + 1 * direction_cooficient,
         };
-        if enemies.contains_key(&cell_enemy_right) {
+        if enemy_cells.contains(&cell_enemy_right) {
             available_cells.push(cell_enemy_right);
         }
-        if enemies.contains_key(&cell_enemy_left) {
+        if enemy_cells.contains(&cell_enemy_left) {
             available_cells.push(cell_enemy_left);
         }
         return available_cells;
     }
 
-    fn split_pieces_by_color<'a>(
+    fn available_cells_for_rook(
         &self,
-        pieces: &'a Vec<&ChessPiece>,
-    ) -> (
-        HashMap<CellPosition, &'a ChessPiece>,
-        HashMap<CellPosition, &'a ChessPiece>,
-    ) {
-        let mut allies: HashMap<CellPosition, &ChessPiece> = HashMap::new();
-        let mut enemies: HashMap<CellPosition, &ChessPiece> = HashMap::new();
+        board: &Board,
+        ally_cells: &HashSet<CellPosition>,
+        enemy_cells: &HashSet<CellPosition>,
+    ) -> Vec<CellPosition> {
+        let range_right: Vec<CellPosition> = (self.pos.i + 1..board.last_element + 1)
+            .map(|i| CellPosition { i, j: self.pos.j })
+            .collect();
+        let range_left: Vec<CellPosition> = (board.first_element..self.pos.i)
+            .rev()
+            .map(|i| CellPosition { i, j: self.pos.j })
+            .collect();
+        let range_down: Vec<CellPosition> = (board.first_element..self.pos.j)
+            .rev()
+            .map(|j| CellPosition { i: self.pos.i, j })
+            .collect();
+        let range_up: Vec<CellPosition> = (self.pos.j + 1..board.last_element + 1)
+            .map(|j| CellPosition { i: self.pos.i, j })
+            .collect();
+
+        let available_line_cells = |range| {
+            let mut available_cells = Vec::new();
+            for cell in range {
+                if ally_cells.contains(&cell) {
+                    break;
+                }
+                if enemy_cells.contains(&cell) {
+                    available_cells.push(cell);
+                    break;
+                }
+                available_cells.push(cell)
+            }
+            return available_cells;
+        };
+
+        let range_right = available_line_cells(range_right);
+        let range_left = available_line_cells(range_left);
+        let range_up = available_line_cells(range_up);
+        let range_down = available_line_cells(range_down);
+
+        return [range_right, range_left, range_down, range_up].concat();
+    }
+
+    fn split_pieces_by_color(
+        &self,
+        pieces: &Vec<&ChessPiece>,
+    ) -> (HashSet<CellPosition>, HashSet<CellPosition>) {
+        let mut allies = HashSet::new();
+        let mut enemies = HashSet::new();
         for chess_piece in pieces.iter() {
             if self.color == chess_piece.color {
-                allies.insert(chess_piece.pos, *chess_piece);
+                allies.insert(chess_piece.pos);
             } else {
-                enemies.insert(chess_piece.pos, *chess_piece);
+                enemies.insert(chess_piece.pos);
             }
         }
         return (allies, enemies);
     }
+
+    // fn split_pieces_by_color_map<'a>(
+    //     &self,
+    //     pieces: &'a Vec<&ChessPiece>,
+    // ) -> (
+    //     HashMap<CellPosition, &'a ChessPiece>,
+    //     HashMap<CellPosition, &'a ChessPiece>,
+    // ) {
+    //     let mut allies: HashMap<CellPosition, &ChessPiece> = HashMap::new();
+    //     let mut enemies: HashMap<CellPosition, &ChessPiece> = HashMap::new();
+    //     for chess_piece in pieces.iter() {
+    //         if self.color == chess_piece.color {
+    //             allies.insert(chess_piece.pos, *chess_piece);
+    //         } else {
+    //             enemies.insert(chess_piece.pos, *chess_piece);
+    //         }
+    //     }
+    //     return (allies, enemies);
+    // }
 }
