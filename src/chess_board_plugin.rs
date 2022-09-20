@@ -20,7 +20,6 @@ impl Plugin for ChessBoardPlugin {
             .add_system(draw_highlight_chess_cell_system)
             .add_system(set_piece_selected)
             .add_system(set_cell_selected)
-            .add_system(remove_taken_piece_system)
             .add_system(move_piece_system);
     }
 }
@@ -106,8 +105,11 @@ fn calculate_chess_cell_state_system(
     }
 
     let selected_piece = q_chess_piece
-        .get(move_state.selected_piece.unwrap())
-        .unwrap();
+        .get(move_state.selected_piece.unwrap()).ok();
+    if selected_piece.is_none() {
+        return;
+    }
+    let selected_piece = selected_piece.unwrap();
 
     let pieces: Vec<&ChessPiece> = q_chess_piece.iter().collect();
 
@@ -198,9 +200,11 @@ fn set_cell_selected(
     }
 
     let selected_piece = q_chess_piece
-        .get(move_state.selected_piece.unwrap())
-        .unwrap();
-
+        .get(move_state.selected_piece.unwrap()).ok();
+    if selected_piece.is_none() {
+        return;
+    }
+    let selected_piece = selected_piece.unwrap();
     let pieces: Vec<&ChessPiece> = q_chess_piece.iter().collect();
 
     let available_cells = selected_piece.get_available_cells_for_move(&board, &pieces);
@@ -227,20 +231,6 @@ fn set_cell_selected(
             move_state.move_in_action = true;
         }
     }
-}
-
-fn remove_taken_piece_system(
-    mut commands: Commands,
-    q_chess_piece: Query<(Entity, &ChessPiece)>,
-    mut piece_taken_event_reader: EventReader<ChessPieceRemovedEvent>,
-) {
-    piece_taken_event_reader.iter().for_each(|cpre| {
-        q_chess_piece.iter().for_each(|(entity, cp)| {
-            if cp.pos == cpre.pos && cp.color == cpre.color {
-                commands.entity(entity).despawn();
-            }
-        })
-    })
 }
 
 fn move_piece_system(
@@ -310,6 +300,28 @@ fn spawn_piece(
         })
         .insert(chess_piece);
 }
+
+fn spawn_removed_piece(
+    chess_piece: ChessPiece,
+    commands: &mut Commands,
+    assets: &AssetServer,
+    board: &Board,
+) {
+    let image = load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
+    let (x, y) = board.coordinates(&chess_piece.pos);
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: image,
+            transform: Transform {
+                translation: Vec3::new(x, y, 1.0),
+                scale: Vec3::splat(board.image_scale),
+                ..default()
+            },
+            ..Default::default()
+        })
+        .insert(chess_piece);
+}
+
 
 fn load_piece_image(
     color: &ChessColor,

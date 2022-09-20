@@ -1,15 +1,17 @@
+use bevy::prelude::*;
+
+use chess_board_plugin::ChessBoardPlugin;
+use cursor_cords_plugin::CursorCordsPlugin;
+use custom_cursor_plugin::CustomCursorPlugin;
+use models::common_resources::{Board, BoardPointer, MainCamera};
+
+use crate::removed_pieces_holder_plugin::RemovedPiecesHolderPlugin;
+
 mod cursor_cords_plugin;
 mod chess_board_plugin;
 mod custom_cursor_plugin;
 mod models;
-
-use bevy::prelude::*;
-use chess_board_plugin::ChessBoardPlugin;
-use models::common_resources::{BoardPointer, Board, MainCamera};
-use cursor_cords_plugin::CursorCordsPlugin;
-use custom_cursor_plugin::CustomCursorPlugin;
-
-
+mod removed_pieces_holder_plugin;
 
 fn main() {
     App::new()
@@ -23,6 +25,7 @@ fn main() {
         .add_plugin(ChessBoardPlugin)
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
+        .add_plugin(RemovedPiecesHolderPlugin)
         .run();
 }
 
@@ -33,6 +36,5 @@ fn set_up_resources(mut commands: Commands) {
     commands
         .spawn_bundle(Camera2dBundle::default())
         .insert(MainCamera);
-        
 }
 
