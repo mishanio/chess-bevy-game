@@ -50,6 +50,10 @@ impl Board {
         return magic * self.image_scale;
     }
 
+    pub fn coordinates(&self, pos: &CellPosition) -> (f32, f32) {
+        return (self.x_coordinate(pos.i), self.y_coordinate(pos.j));
+    }
+
     pub fn x_coordinate(&self, pos: i8) -> f32 {
         self.start_x_point + (pos as f32) * self.image_size_scaled()
     }

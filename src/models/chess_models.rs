@@ -1,8 +1,6 @@
-use std::cell::Cell;
-
 use bevy::{
     prelude::*,
-    utils::{HashMap, HashSet},
+    utils::{HashSet},
 };
 
 use crate::models::common_resources::{Board, CellPosition};
@@ -12,32 +10,58 @@ pub struct MoveState {
     pub selected_piece: Option<Entity>,
     pub selected_cell: Option<Entity>,
     pub move_in_action: bool,
+    pub current_collor: ChessColor,
 }
 
 impl MoveState {
-    pub fn reset(&mut self) {
+    pub fn next_move(&mut self) {
         self.move_in_action = false;
         self.selected_cell = None;
         self.selected_piece = None;
+        self.current_collor = match self.current_collor {
+            ChessColor::BLACK => ChessColor::WHITE,
+            ChessColor::WHITE => ChessColor::BLACK,
+        }
     }
+}
+
+pub struct ChessPieceRemovedEvent {
+    pub pos: CellPosition,
+    pub color: ChessColor,
+    pub piece_type: PieceType,
+}
+
+pub enum ChessCellState {
+    NONE,
+    HIGHTLIGHTED,
+    SLECTED,
+    ATTACKED,
 }
 
 #[derive(Component)]
 pub struct ChessCell {
     pub pos: CellPosition,
+    pub state: ChessCellState,
 }
 impl ChessCell {
     pub fn from(i: i8, j: i8) -> ChessCell {
-        let pos = CellPosition { i, j };
-        ChessCell { pos }
+        ChessCell { pos: CellPosition { i, j } ,state: ChessCellState::NONE}
+    }
+    pub fn color(&self) -> ChessColor {
+        return if (self.pos.j + self.pos.i) % 2 == 0 {
+            ChessColor::WHITE
+        } else {
+            ChessColor::BLACK
+        };
     }
 }
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub enum ChessColor {
-    WHITE,
+    #[default] WHITE,
     BLACK,
 }
 
+#[derive(Clone)]
 pub enum PieceType {
     PAWN,
     BISHOP,
