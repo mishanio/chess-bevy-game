@@ -33,8 +33,8 @@ pub struct ChessPieceRemovedEvent {
 
 pub enum ChessCellState {
     NONE,
-    HIGHTLIGHTED,
-    SLECTED,
+    HIGHLIGHTED,
+    SELECTED,
     ATTACKED,
 }
 

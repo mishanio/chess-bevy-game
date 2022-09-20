@@ -2,7 +2,7 @@
 chess game using bevy
 
 Run command
-cargo run --features bevy/dynamic
+RUST_LOG="warn,chess-bevy-game=debug" cargo run --features bevy/dynamic
 
 For development
 Run with log debug stacktrace on error and reload on save changes:

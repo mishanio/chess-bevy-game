@@ -3,11 +3,8 @@ use std::borrow::BorrowMut;
 use bevy::prelude::*;
 
 use crate::{
-    models::chess_models::{ChessCell, ChessColor, ChessPiece, MoveState, PieceType},
-    models::{
-        chess_models::{ChessCellState, ChessPieceRemovedEvent},
-        common_resources::{Board, BoardPointer},
-    },
+    models::common_resources::{Board, BoardPointer},
+    models::chess_models::{ChessCell, ChessColor, ChessPiece, MoveState, PieceType,ChessCellState, ChessPieceRemovedEvent},
 };
 
 pub struct ChessBoardPlugin;
@@ -128,17 +125,15 @@ fn calculate_chess_cell_state_system(
                 .iter()
                 .find(|cp| cp.pos == chess_cell.pos && selected_piece.color != cp.color).is_some();
 
-            if is_enemy_piece_selected || available_cells.contains(&chess_cell.pos)  {
+            if is_enemy_piece_selected && available_cells.contains(&chess_cell.pos) {
                 info!("chess_sell is attacked");
-                chess_cell.state = ChessCellState::ATTACKED; 
+                chess_cell.state = ChessCellState::ATTACKED;
             } else {
                 info!("chess_sell is selected");
-               chess_cell.state = ChessCellState::SLECTED; 
+                chess_cell.state = ChessCellState::SELECTED;
             }
-
-            chess_cell.state = ChessCellState::SLECTED;
         } else if available_cells.contains(&chess_cell.pos) {
-            chess_cell.state = ChessCellState::HIGHTLIGHTED;
+            chess_cell.state = ChessCellState::HIGHLIGHTED;
         } else {
             chess_cell.state = ChessCellState::NONE;
         }
@@ -149,9 +144,9 @@ fn draw_highlight_chess_cell_system(mut q_chess_cells: Query<(&mut Sprite, &Ches
     for (mut sprite, chess_cell) in q_chess_cells.iter_mut() {
         match chess_cell.state {
             ChessCellState::NONE => sprite.color.set_r(1.),
-            ChessCellState::HIGHTLIGHTED => sprite.color.set_r(0.7),
-            ChessCellState::SLECTED => sprite.color.set_r(0.5),
-            ChessCellState::ATTACKED => sprite.color.set_r(1.0),
+            ChessCellState::HIGHLIGHTED => sprite.color.set_r(0.7),
+            ChessCellState::SELECTED => sprite.color.set_r(0.5),
+            ChessCellState::ATTACKED => sprite.color.set_r(0.0),
         };
     }
 }
