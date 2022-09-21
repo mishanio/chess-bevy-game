@@ -2,6 +2,11 @@ use std::ops::Range;
 
 use bevy::prelude::Component;
 
+pub enum DiscardArea {
+    TOP,
+    BOTTOM,
+}
+
 // mouse pointer resource
 pub struct BoardPointer {
     pub x: f32,
@@ -54,13 +59,29 @@ impl Board {
         return (self.x_coordinate(pos.i), self.y_coordinate(pos.j));
     }
 
-    pub fn x_coordinate(&self, pos: i8) -> f32 {
+    pub fn discard_tray_position(&self, element_num: i8, position: &DiscardArea) -> (f32, f32) {
+        match position {
+            DiscardArea::TOP => {
+                let discard_start_y_offset = self.start_y_point + (self.last_element as f32) * self.image_size_scaled();
+                let y_coordinate = discard_start_y_offset +  (element_num / self.last_element) as f32 * self.image_size_scaled();
+                let x_coordinate = (element_num % self.last_element) as f32 * self.image_size_scaled();
+                (x_coordinate, y_coordinate)
+            }
+            DiscardArea::BOTTOM => {
+                (0., 0.)
+            }
+        }
+    }
+
+    fn x_coordinate(&self, pos: i8) -> f32 {
         self.start_x_point + (pos as f32) * self.image_size_scaled()
     }
 
-    pub fn y_coordinate(&self, pos: i8) -> f32 {
+    fn y_coordinate(&self, pos: i8) -> f32 {
         self.start_y_point + (pos as f32) * self.image_size_scaled()
     }
+
+
 
     pub fn is_cell_matches(&self, pos: &CellPosition, pointer: &BoardPointer) -> bool {
         let ref this = self;

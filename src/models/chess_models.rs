@@ -3,7 +3,7 @@ use bevy::{
     utils::{HashSet},
 };
 
-use crate::models::common_resources::{Board, CellPosition};
+use crate::models::common_resources::{Board, CellPosition, DiscardArea};
 
 #[derive(Default)]
 pub struct MoveState {
@@ -26,9 +26,7 @@ impl MoveState {
 }
 
 pub struct ChessPieceRemovedEvent {
-    pub pos: CellPosition,
-    pub color: ChessColor,
-    pub piece_type: PieceType,
+    pub chess_piece: ChessPiece
 }
 
 pub enum ChessCellState {
@@ -55,7 +53,7 @@ impl ChessCell {
         };
     }
 }
-#[derive(Clone, PartialEq, Default)]
+#[derive(Clone, PartialEq, Eq, Hash, Default)]
 pub enum ChessColor {
     #[default] WHITE,
     BLACK,
@@ -76,6 +74,13 @@ pub struct ChessPiece {
     pub pos: CellPosition,
     pub color: ChessColor,
     pub piece_type: PieceType,
+}
+
+#[derive(Component)]
+pub struct RemovedChessPiece {
+    pub color: ChessColor,
+    pub piece_type: PieceType,
+    pub num: i8,
 }
 
 impl ChessPiece {
@@ -116,32 +121,32 @@ impl ChessPiece {
         let is_first_move = (self.color == ChessColor::WHITE
             && self.pos.j == board.first_element + 1)
             || (self.color == ChessColor::BLACK && self.pos.j == board.last_element - 1);
-        let direction_cooficient: i8 = if self.color == ChessColor::WHITE {
+        let direction_coefficient: i8 = if self.color == ChessColor::WHITE {
             1
         } else {
             -1
         };
         let cell_1 = CellPosition {
             i: self.pos.i,
-            j: self.pos.j + 1 * direction_cooficient,
+            j: self.pos.j + 1 * direction_coefficient,
         };
         if !ally_cells.contains(&cell_1) && !enemy_cells.contains(&cell_1) {
             available_cells.push(cell_1);
         }
         let cell_2 = CellPosition {
             i: self.pos.i,
-            j: self.pos.j + 2 * direction_cooficient,
+            j: self.pos.j + 2 * direction_coefficient,
         };
         if is_first_move && !ally_cells.contains(&cell_2) && !enemy_cells.contains(&cell_2) {
             available_cells.push(cell_2);
         }
         let cell_enemy_right = CellPosition {
             i: self.pos.i + 1,
-            j: self.pos.j + 1 * direction_cooficient,
+            j: self.pos.j + 1 * direction_coefficient,
         };
         let cell_enemy_left = CellPosition {
             i: self.pos.i - 1,
-            j: self.pos.j + 1 * direction_cooficient,
+            j: self.pos.j + 1 * direction_coefficient,
         };
         if enemy_cells.contains(&cell_enemy_right) {
             available_cells.push(cell_enemy_right);

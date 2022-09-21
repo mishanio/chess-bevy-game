@@ -3,9 +3,10 @@ use std::borrow::BorrowMut;
 use bevy::prelude::*;
 
 use crate::{
+    models::chess_models::{ChessCell, ChessCellState, ChessColor, ChessPiece, ChessPieceRemovedEvent, MoveState, PieceType},
     models::common_resources::{Board, BoardPointer},
-    models::chess_models::{ChessCell, ChessColor, ChessPiece, MoveState, PieceType,ChessCellState, ChessPieceRemovedEvent},
 };
+use crate::assets_helper::AssetsHelper;
 
 pub struct ChessBoardPlugin;
 
@@ -20,6 +21,7 @@ impl Plugin for ChessBoardPlugin {
             .add_system(draw_highlight_chess_cell_system)
             .add_system(set_piece_selected)
             .add_system(set_cell_selected)
+            .add_system(remove_taken_piece_system)
             .add_system(move_piece_system);
     }
 }
@@ -32,7 +34,7 @@ fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: R
     for j in board.cell_range() {
         for i in board.cell_range() {
             let cell = ChessCell::from(i, j);
-            spawn_chess_cell(cell, &mut commands, &board, &assets);
+            AssetsHelper::spawn_chess_cell(cell, &mut commands, &board, &assets);
         }
     }
 }
@@ -221,9 +223,11 @@ fn set_cell_selected(
                 .find(|chess_piece| chess_piece.pos == cell.pos)
             {
                 piece_taken_event_writer.send(ChessPieceRemovedEvent {
-                    pos: piece_to_remove.pos,
-                    color: piece_to_remove.color.clone(),
-                    piece_type: piece_to_remove.piece_type.clone(),
+                    chess_piece: ChessPiece {
+                        pos: piece_to_remove.pos,
+                        color: piece_to_remove.color.clone(),
+                        piece_type: piece_to_remove.piece_type.clone(),
+                    }
                 });
             }
 
@@ -280,103 +284,18 @@ fn move_piece_system(
     move_state.next_move();
 }
 
-fn spawn_piece(
-    chess_piece: ChessPiece,
-    commands: &mut Commands,
-    assets: &AssetServer,
-    board: &Board,
+fn remove_taken_piece_system(
+    mut commands: Commands,
+    q_chess_piece: Query<(Entity, &ChessPiece)>,
+    mut piece_taken_event_reader: EventReader<ChessPieceRemovedEvent>,
 ) {
-    let image = load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
-    let (x, y) = board.coordinates(&chess_piece.pos);
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: image,
-            transform: Transform {
-                translation: Vec3::new(x, y, 1.0),
-                scale: Vec3::splat(board.image_scale),
-                ..default()
-            },
-            ..Default::default()
+    piece_taken_event_reader.iter().for_each(|event| {
+        q_chess_piece.iter().for_each(|(entity, cp)| {
+            if cp.pos == event.chess_piece.pos && cp.color == event.chess_piece.color {
+                commands.entity(entity).despawn();
+            }
         })
-        .insert(chess_piece);
-}
-
-fn spawn_removed_piece(
-    chess_piece: ChessPiece,
-    commands: &mut Commands,
-    assets: &AssetServer,
-    board: &Board,
-) {
-    let image = load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
-    let (x, y) = board.coordinates(&chess_piece.pos);
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: image,
-            transform: Transform {
-                translation: Vec3::new(x, y, 1.0),
-                scale: Vec3::splat(board.image_scale),
-                ..default()
-            },
-            ..Default::default()
-        })
-        .insert(chess_piece);
+    })
 }
 
 
-fn load_piece_image(
-    color: &ChessColor,
-    piece_type: &PieceType,
-    assets: &AssetServer,
-) -> Handle<Image> {
-    let color_name = match color {
-        ChessColor::WHITE => "w",
-        ChessColor::BLACK => "b",
-    };
-
-    let type_name = match piece_type {
-        PieceType::PAWN => "pawn",
-        PieceType::BISHOP => "bishop",
-        PieceType::KNIGHT => "knight",
-        PieceType::ROOK => "rook",
-        PieceType::QUEEN => "queen",
-        PieceType::KING => "king",
-    };
-    let path = format!(
-        "shadowed/128px/{}_{}_png_shadow_128px.png",
-        color_name, type_name
-    );
-
-    return assets.load(&path);
-}
-
-fn spawn_chess_cell(cell: ChessCell, commands: &mut Commands, board: &Board, assets: &AssetServer) {
-    let (x, y) = board.coordinates(&cell.pos);
-    let cell_image = load_cell_image(&cell.color(), assets);
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: cell_image,
-            transform: Transform {
-                translation: Vec3::new(x, y, 0.0),
-                scale: Vec3::splat(board.image_scale),
-                ..default()
-            },
-            ..Default::default()
-        })
-        .insert(cell);
-}
-
-fn load_cell_image(color: &ChessColor, assets: &AssetServer) -> Handle<Image> {
-    let sprite_name = match color {
-        ChessColor::WHITE => "square brown light_png_shadow_128px.png",
-        ChessColor::BLACK => "square brown dark_png_shadow_128px.png",
-    };
-
-    return assets.load(&format!("shadowed/128px/{}", sprite_name));
-}
-
-// fn load_hightlight_cell_image(assets: &AssetServer) -> Handle<Image> {
-//     return assets.load("shadowed/128px/square gray light _png_shadow_128px.png");
-// }
-// fn load_selected_cell_image(assets: &AssetServer) -> Handle<Image> {
-//     return assets.load("shadowed/128px/square gray dark _png_shadow_128px.png");
-// }
