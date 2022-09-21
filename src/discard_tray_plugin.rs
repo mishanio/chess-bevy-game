@@ -5,13 +5,11 @@ use bevy::prelude::*;
 use crate::{App, Board, Plugin};
 use crate::assets_helper::AssetsHelper;
 use crate::models::chess_models::{ChessColor, ChessPieceRemovedEvent, RemovedChessPiece};
-use crate::models::common_resources::DiscardArea;
+
 
 #[derive(Default)]
-struct DiscardTray {
+struct DiscardTrayHolder {
     value: HashMap<ChessColor, i8>,
-    // last_black_position: i8,
-    // last_white_position: i8,
 }
 
 pub struct DiscardTrayPlugin;
@@ -24,20 +22,20 @@ impl Plugin for DiscardTrayPlugin {
 }
 
 fn set_up_resources(mut commands: Commands) {
-    commands.insert_resource(DiscardTray::default())
+    commands.insert_resource(DiscardTrayHolder::default())
 }
 
 
 fn add_taken_piece_to_discard_tray(
     mut commands: Commands,
     mut piece_taken_event_reader: EventReader<ChessPieceRemovedEvent>,
-    mut discard_tray: ResMut<DiscardTray>,
+    mut discard_tray: ResMut<DiscardTrayHolder>,
     board: Res<Board>,
-    assets: Res<AssetsServer>,
+    assets: Res<AssetServer>,
 ) {
     piece_taken_event_reader.iter().for_each(|event| {
         let chess_piece = &event.chess_piece;
-        let element_num = discard_tray.value.get(&chess_piece.color).or(0);
+        let element_num = discard_tray.value.get(&chess_piece.color).map_or(0, |v| *v);
 
         let removed_piece = RemovedChessPiece {
             color: chess_piece.color.clone(),

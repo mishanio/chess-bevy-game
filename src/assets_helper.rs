@@ -35,8 +35,8 @@ impl AssetsHelper {
     ) {
         let image = AssetsHelper::load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
         let discard_area = match chess_piece.color {
-            ChessColor::WHITE => DiscardArea::BOTTOM,
-            ChessColor::BLACK => DiscardArea::TOP,
+            ChessColor::WHITE => DiscardArea::TOP,
+            ChessColor::BLACK => DiscardArea::BOTTOM,
         };
         let (x, y) = board.discard_tray_position(chess_piece.num, &discard_area);
         commands
@@ -44,7 +44,7 @@ impl AssetsHelper {
                 texture: image,
                 transform: Transform {
                     translation: Vec3::new(x, y, 1.0),
-                    scale: Vec3::splat(board.image_scale),
+                    scale: Vec3::splat(board.discard_image_scale()),
                     ..default()
                 },
                 ..Default::default()

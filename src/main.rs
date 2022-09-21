@@ -38,4 +38,3 @@ fn set_up_resources(mut commands: Commands) {
         .spawn_bundle(Camera2dBundle::default())
         .insert(MainCamera);
 }
-

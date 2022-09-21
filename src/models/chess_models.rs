@@ -1,9 +1,9 @@
 use bevy::{
     prelude::*,
-    utils::{HashSet},
+    utils::HashSet,
 };
 
-use crate::models::common_resources::{Board, CellPosition, DiscardArea};
+use crate::models::common_resources::{Board, CellPosition};
 
 #[derive(Default)]
 pub struct MoveState {
@@ -121,11 +121,11 @@ impl ChessPiece {
         let is_first_move = (self.color == ChessColor::WHITE
             && self.pos.j == board.first_element + 1)
             || (self.color == ChessColor::BLACK && self.pos.j == board.last_element - 1);
-        let direction_coefficient: i8 = if self.color == ChessColor::WHITE {
-            1
-        } else {
-            -1
+        let direction_coefficient: i8 = match self.color  {
+            ChessColor::WHITE => 1,
+            ChessColor::BLACK => -1,
         };
+        
         let cell_1 = CellPosition {
             i: self.pos.i,
             j: self.pos.j + 1 * direction_coefficient,
