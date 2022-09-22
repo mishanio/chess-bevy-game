@@ -53,13 +53,13 @@ impl ChessCell {
         };
     }
 }
-#[derive(Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Clone, PartialEq, Eq, Hash, Default, Debug)]
 pub enum ChessColor {
     #[default] WHITE,
     BLACK,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum PieceType {
     PAWN,
     BISHOP,

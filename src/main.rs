@@ -13,6 +13,7 @@ mod custom_cursor_plugin;
 mod models;
 mod discard_tray_plugin;
 mod assets_helper;
+mod piece_parser;
 
 fn main() {
     App::new()

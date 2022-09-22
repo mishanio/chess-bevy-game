@@ -14,7 +14,7 @@ pub struct BoardPointer {
 }
 
 // position of a cell on board 
-#[derive(Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, Debug)]
 pub struct CellPosition {
     pub i: i8,
     pub j: i8,
