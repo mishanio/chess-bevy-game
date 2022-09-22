@@ -2,15 +2,7 @@ use std::{borrow::BorrowMut};
 
 use bevy::prelude::*;
 
-use crate::assets_helper::AssetsHelper;
-use crate::models::chess_models::{ChessColor, PieceType};
-use crate::{
-    models::chess_models::{
-        ChessCell, ChessCellState, ChessPiece, ChessPieceRemovedEvent, MoveState,
-    },
-    models::common_resources::{Board, BoardPointer},
-    piece_parser::PieceParser,
-};
+use crate::{assets_helper::AssetsHelper, models::{removed_chess_piece::ChessPieceRemovedEvent, chess_move_state::MoveState, common_resources::{Board, BoardPointer}, chess_cell::{ChessCell, ChessCellState}, chess_piece::{ChessPiece, PieceType}, common_chess::ChessColor}};
 
 pub struct ChessBoardPlugin;
 

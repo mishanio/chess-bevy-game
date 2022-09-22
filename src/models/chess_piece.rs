@@ -1,65 +1,9 @@
-
 use bevy::{prelude::*, utils::HashSet};
 
 use crate::models::common_resources::{Board, CellPosition};
 
-#[derive(Default)]
-pub struct MoveState {
-    pub selected_piece: Option<Entity>,
-    pub selected_cell: Option<Entity>,
-    pub move_in_action: bool,
-    pub current_collor: ChessColor,
-}
+use super::common_chess::ChessColor;
 
-impl MoveState {
-    pub fn next_move(&mut self) {
-        self.move_in_action = false;
-        self.selected_cell = None;
-        self.selected_piece = None;
-        self.current_collor = match self.current_collor {
-            ChessColor::BLACK => ChessColor::WHITE,
-            ChessColor::WHITE => ChessColor::BLACK,
-        }
-    }
-}
-
-pub struct ChessPieceRemovedEvent {
-    pub chess_piece: ChessPiece,
-}
-
-pub enum ChessCellState {
-    NONE,
-    HIGHLIGHTED,
-    SELECTED,
-    ATTACKED,
-}
-
-#[derive(Component)]
-pub struct ChessCell {
-    pub pos: CellPosition,
-    pub state: ChessCellState,
-}
-impl ChessCell {
-    pub fn from(i: i8, j: i8) -> ChessCell {
-        ChessCell {
-            pos: CellPosition { i, j },
-            state: ChessCellState::NONE,
-        }
-    }
-    pub fn color(&self) -> ChessColor {
-        return if (self.pos.j + self.pos.i) % 2 == 0 {
-            ChessColor::WHITE
-        } else {
-            ChessColor::BLACK
-        };
-    }
-}
-#[derive(Clone, PartialEq, Eq, Hash, Default, Debug)]
-pub enum ChessColor {
-    #[default]
-    WHITE,
-    BLACK,
-}
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum PieceType {
@@ -71,16 +15,6 @@ pub enum PieceType {
     KING,
 }
 
-
-
-#[derive(Component)]
-pub struct RemovedChessPiece {
-    pub color: ChessColor,
-    pub piece_type: PieceType,
-    pub num: i8,
-}
-
-
 struct DiagonalCellPositions {
     pos: CellPosition,
     first_element: i8,
@@ -88,47 +22,6 @@ struct DiagonalCellPositions {
     x_direction: i8,
     y_direction: i8,
 }
-
-impl DiagonalCellPositions {
-
-    fn top_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: 1, y_direction: 1 }
-    }
-
-    fn top_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: -1, y_direction: 1 }
-    }
-
-    fn down_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: 1, y_direction: -1 }
-    }
-
-    fn down_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: -1, y_direction: -1 }
-    }
-
-    fn is_cell_out_of_range(&self, cell: &CellPosition) -> bool {
-        return self.is_out_of_range(cell.i) || self.is_out_of_range(cell.j);
-    }
-    fn is_out_of_range(&self, pos: i8) -> bool {
-        pos < self.first_element || pos > self.last_element
-    }
-}
-
-impl Iterator for DiagonalCellPositions{
-    type Item = CellPosition;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let next = CellPosition {i: self.pos.i + self.x_direction, j: self.pos.j + self.y_direction};
-        if self.is_cell_out_of_range(&next) {
-            return None
-        }
-        self.pos = next;
-        return Some(self.pos);
-    }
-}
-
-
 
 #[derive(Component)]
 pub struct ChessPiece {
@@ -244,17 +137,31 @@ impl ChessPiece {
         ally_cells: &HashSet<CellPosition>,
         enemy_cells: &HashSet<CellPosition>,
     ) -> Vec<CellPosition> {
-        let range_top_right: Vec<CellPosition> = DiagonalCellPositions::top_right(self.pos, board).collect();
-        let range_top_left: Vec<CellPosition> = DiagonalCellPositions::top_left(self.pos, board).into_iter().collect();
-        let range_down_right: Vec<CellPosition> = DiagonalCellPositions::down_right(self.pos, board).into_iter().collect();
-        let range_down_left: Vec<CellPosition> = DiagonalCellPositions::down_left(self.pos, board).into_iter().collect();
+        let range_top_right: Vec<CellPosition> =
+            DiagonalCellPositions::top_right(self.pos, board).collect();
+        let range_top_left: Vec<CellPosition> = DiagonalCellPositions::top_left(self.pos, board)
+            .into_iter()
+            .collect();
+        let range_down_right: Vec<CellPosition> =
+            DiagonalCellPositions::down_right(self.pos, board)
+                .into_iter()
+                .collect();
+        let range_down_left: Vec<CellPosition> = DiagonalCellPositions::down_left(self.pos, board)
+            .into_iter()
+            .collect();
 
         let range_top_right = self.available_line_cells(range_top_right, ally_cells, enemy_cells);
         let range_top_left = self.available_line_cells(range_top_left, ally_cells, enemy_cells);
         let range_down_right = self.available_line_cells(range_down_right, ally_cells, enemy_cells);
         let range_down_left = self.available_line_cells(range_down_left, ally_cells, enemy_cells);
 
-        return [range_top_right, range_top_left, range_down_right, range_down_left].concat();
+        return [
+            range_top_right,
+            range_top_left,
+            range_down_right,
+            range_down_left,
+        ]
+        .concat();
     }
 
     fn available_cells_for_knight(
@@ -264,11 +171,14 @@ impl ChessPiece {
         enemy_cells: &HashSet<CellPosition>,
     ) -> Vec<CellPosition> {
         vec![]
-    
     }
 
-    fn available_line_cells(&self,range: Vec<CellPosition>,  ally_cells: &HashSet<CellPosition>,
-        enemy_cells: &HashSet<CellPosition>) -> Vec<CellPosition> {
+    fn available_line_cells(
+        &self,
+        range: Vec<CellPosition>,
+        ally_cells: &HashSet<CellPosition>,
+        enemy_cells: &HashSet<CellPosition>,
+    ) -> Vec<CellPosition> {
         let mut available_cells = Vec::new();
         for cell in range {
             if ally_cells.contains(&cell) {
@@ -317,4 +227,69 @@ impl ChessPiece {
     //     }
     //     return (allies, enemies);
     // }
+}
+
+impl DiagonalCellPositions {
+    fn top_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions {
+            pos,
+            first_element: board.first_element,
+            last_element: board.last_element,
+            x_direction: 1,
+            y_direction: 1,
+        };
+    }
+
+    fn top_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions {
+            pos,
+            first_element: board.first_element,
+            last_element: board.last_element,
+            x_direction: -1,
+            y_direction: 1,
+        };
+    }
+
+    fn down_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions {
+            pos,
+            first_element: board.first_element,
+            last_element: board.last_element,
+            x_direction: 1,
+            y_direction: -1,
+        };
+    }
+
+    fn down_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions {
+            pos,
+            first_element: board.first_element,
+            last_element: board.last_element,
+            x_direction: -1,
+            y_direction: -1,
+        };
+    }
+
+    fn is_cell_out_of_range(&self, cell: &CellPosition) -> bool {
+        return self.is_out_of_range(cell.i) || self.is_out_of_range(cell.j);
+    }
+    fn is_out_of_range(&self, pos: i8) -> bool {
+        pos < self.first_element || pos > self.last_element
+    }
+}
+
+impl Iterator for DiagonalCellPositions {
+    type Item = CellPosition;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = CellPosition {
+            i: self.pos.i + self.x_direction,
+            j: self.pos.j + self.y_direction,
+        };
+        if self.is_cell_out_of_range(&next) {
+            return None;
+        }
+        self.pos = next;
+        return Some(self.pos);
+    }
 }

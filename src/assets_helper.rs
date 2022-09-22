@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use crate::Board;
-use crate::models::chess_models::{ChessCell, ChessColor, ChessPiece, PieceType, RemovedChessPiece};
+use crate::models::chess_cell::ChessCell;
+use crate::models::chess_piece::{ChessPiece, PieceType};
+use crate::models::common_chess::ChessColor;
 use crate::models::common_resources::DiscardArea;
+use crate::models::removed_chess_piece::RemovedChessPiece;
 
 pub struct AssetsHelper;
 

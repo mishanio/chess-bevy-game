@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::models::chess_models::{ChessColor, ChessPiece, PieceType};
+use crate::models::{common_chess::ChessColor, chess_piece::{PieceType, ChessPiece}};
+
 
 pub struct PieceParser;
 

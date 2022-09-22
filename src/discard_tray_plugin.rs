@@ -2,9 +2,10 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 // use bevy::utils::HashMap;
 
+use crate::models::common_chess::ChessColor;
+use crate::models::removed_chess_piece::{ChessPieceRemovedEvent, RemovedChessPiece};
 use crate::{App, Board, Plugin};
 use crate::assets_helper::AssetsHelper;
-use crate::models::chess_models::{ChessColor, ChessPieceRemovedEvent, RemovedChessPiece};
 
 
 #[derive(Default)]
