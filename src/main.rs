@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowMode};
 
 use chess_board_plugin::ChessBoardPlugin;
 use cursor_cords_plugin::CursorCordsPlugin;
@@ -20,6 +20,7 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
         .insert_resource(WindowDescriptor {
             title: "Chess Game".to_string(),
+            mode: WindowMode::Windowed,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)

@@ -2,9 +2,7 @@ use std::collections::HashMap;
 
 use crate::models::chess_models::{ChessColor, ChessPiece, PieceType};
 
-struct PieceParser;
-
-
+pub struct PieceParser;
 
 impl PieceParser {
     
@@ -25,7 +23,7 @@ impl PieceParser {
         ]);
     }
 
-    fn default_map() -> String {
+    pub fn default_map() -> String {
         let string = "|b_ro|b_kn|b_bi|b_ki|b_qu|b_bi|b_kn|b_ro|\n
                             |b_pa|b_pa|b_pa|b_pa|b_pa|b_pa|b_pa|b_pa|\n
                             |none|none|none|none|none|none|none|none|\n

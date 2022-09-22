@@ -1,12 +1,15 @@
-use std::borrow::BorrowMut;
+use std::{borrow::BorrowMut};
 
 use bevy::prelude::*;
 
-use crate::{
-    models::chess_models::{ChessCell, ChessCellState, ChessColor, ChessPiece, ChessPieceRemovedEvent, MoveState, PieceType},
-    models::common_resources::{Board, BoardPointer},
-};
 use crate::assets_helper::AssetsHelper;
+use crate::{
+    models::chess_models::{
+        ChessCell, ChessCellState, ChessPiece, ChessPieceRemovedEvent, MoveState,
+    },
+    models::common_resources::{Board, BoardPointer},
+    piece_parser::PieceParser,
+};
 
 pub struct ChessBoardPlugin;
 
@@ -40,33 +43,11 @@ fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: R
 }
 
 fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
-    let first = board.first_element;
-    let last = board.last_element;
-    AssetsHelper::spawn_piece(
-        ChessPiece::new(first, last, ChessColor::BLACK, PieceType::ROOK),
-        commands.borrow_mut(),
-        &assets,
-        &board,
-    );
-
-    AssetsHelper::spawn_piece(
-        ChessPiece::new(first + 3, first + 1, ChessColor::WHITE, PieceType::PAWN),
-        commands.borrow_mut(),
-        &assets,
-        &board,
-    );
-    AssetsHelper::spawn_piece(
-        ChessPiece::new(first + 4, first + 1, ChessColor::WHITE, PieceType::PAWN),
-        commands.borrow_mut(),
-        &assets,
-        &board,
-    );
-    AssetsHelper::spawn_piece(
-        ChessPiece::new(first + 4, last - 1, ChessColor::BLACK, PieceType::PAWN),
-        commands.borrow_mut(),
-        &assets,
-        &board,
-    );
+    for element in PieceParser::parse_map(PieceParser::default_map()) {
+        if let Some(piece) = element {
+            AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
+        }
+    }
 }
 
 fn highlight_chess_piece_system(
@@ -81,7 +62,9 @@ fn highlight_chess_piece_system(
     for (entity, mut transform, chess_piece) in q_chess_cells.iter_mut() {
         if Some(entity).eq(&move_sate.selected_piece) {
             transform.scale = Vec3::splat(board.image_scale * 1.1);
-        } else if board.is_cell_matches(&chess_piece.pos, &board_pointer) {
+        } else if board.is_cell_matches(&chess_piece.pos, &board_pointer)
+            && chess_piece.color == move_sate.current_collor
+        {
             transform.scale = Vec3::splat(board.image_scale * 1.05);
         } else {
             transform.scale = Vec3::splat(board.image_scale * 1.0);
@@ -106,8 +89,7 @@ fn calculate_chess_cell_state_system(
         return;
     }
 
-    let selected_piece = q_chess_piece
-        .get(move_state.selected_piece.unwrap()).ok();
+    let selected_piece = q_chess_piece.get(move_state.selected_piece.unwrap()).ok();
     if selected_piece.is_none() {
         return;
     }
@@ -127,7 +109,8 @@ fn calculate_chess_cell_state_system(
         if board.is_cell_matches(&chess_cell.pos, &board_pointer) {
             let is_enemy_piece_selected = pieces
                 .iter()
-                .find(|cp| cp.pos == chess_cell.pos && selected_piece.color != cp.color).is_some();
+                .find(|cp| cp.pos == chess_cell.pos && selected_piece.color != cp.color)
+                .is_some();
 
             if is_enemy_piece_selected && available_cells.contains(&chess_cell.pos) {
                 info!("chess_sell is attacked");
@@ -201,8 +184,7 @@ fn set_cell_selected(
         return;
     }
 
-    let selected_piece = q_chess_piece
-        .get(move_state.selected_piece.unwrap()).ok();
+    let selected_piece = q_chess_piece.get(move_state.selected_piece.unwrap()).ok();
     if selected_piece.is_none() {
         return;
     }
@@ -227,7 +209,7 @@ fn set_cell_selected(
                         pos: piece_to_remove.pos,
                         color: piece_to_remove.color.clone(),
                         piece_type: piece_to_remove.piece_type.clone(),
-                    }
+                    },
                 });
             }
 
@@ -297,5 +279,3 @@ fn remove_taken_piece_system(
         })
     })
 }
-
-
