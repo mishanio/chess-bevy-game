@@ -1,9 +1,10 @@
+
+
 use bevy::{prelude::*, utils::HashSet};
 
 use crate::models::common_resources::{Board, CellPosition};
 
 use super::common_chess::ChessColor;
-
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum PieceType {
@@ -15,7 +16,7 @@ pub enum PieceType {
     KING,
 }
 
-struct DiagonalCellPositions {
+struct DiagonalCellIter {
     pos: CellPosition,
     first_element: i8,
     last_element: i8,
@@ -138,17 +139,13 @@ impl ChessPiece {
         enemy_cells: &HashSet<CellPosition>,
     ) -> Vec<CellPosition> {
         let range_top_right: Vec<CellPosition> =
-            DiagonalCellPositions::top_right(self.pos, board).collect();
-        let range_top_left: Vec<CellPosition> = DiagonalCellPositions::top_left(self.pos, board)
-            .into_iter()
-            .collect();
+            DiagonalCellIter::top_right(self.pos, board).collect();
+        let range_top_left: Vec<CellPosition> =
+            DiagonalCellIter::top_left(self.pos, board).collect();
         let range_down_right: Vec<CellPosition> =
-            DiagonalCellPositions::down_right(self.pos, board)
-                .into_iter()
-                .collect();
-        let range_down_left: Vec<CellPosition> = DiagonalCellPositions::down_left(self.pos, board)
-            .into_iter()
-            .collect();
+            DiagonalCellIter::down_right(self.pos, board).collect();
+        let range_down_left: Vec<CellPosition> =
+            DiagonalCellIter::down_left(self.pos, board).collect();
 
         let range_top_right = self.available_line_cells(range_top_right, ally_cells, enemy_cells);
         let range_top_left = self.available_line_cells(range_top_left, ally_cells, enemy_cells);
@@ -168,9 +165,25 @@ impl ChessPiece {
         &self,
         board: &Board,
         ally_cells: &HashSet<CellPosition>,
-        enemy_cells: &HashSet<CellPosition>,
+        _enemy_cells: &HashSet<CellPosition>,
     ) -> Vec<CellPosition> {
-        vec![]
+        return vec![
+            (2, 1),
+            (2, -1),
+            (-2, 1),
+            (-2, -1),
+            (1, 2),
+            (1, -2),
+            (-1, 2),
+            (-1, -2),
+        ]
+        .iter()
+        .map(|(i, j)| CellPosition {
+            i: self.pos.i + *i as i8,
+            j: self.pos.j + *j as i8,
+        })
+        .filter(|cell_position| !board.is_cell_out_of_range(cell_position) && !ally_cells.contains(cell_position))
+        .collect();
     }
 
     fn available_line_cells(
@@ -229,9 +242,9 @@ impl ChessPiece {
     // }
 }
 
-impl DiagonalCellPositions {
-    fn top_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions {
+impl DiagonalCellIter {
+    fn top_right(pos: CellPosition, board: &Board) -> DiagonalCellIter {
+        return DiagonalCellIter {
             pos,
             first_element: board.first_element,
             last_element: board.last_element,
@@ -240,8 +253,8 @@ impl DiagonalCellPositions {
         };
     }
 
-    fn top_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions {
+    fn top_left(pos: CellPosition, board: &Board) -> DiagonalCellIter {
+        return DiagonalCellIter {
             pos,
             first_element: board.first_element,
             last_element: board.last_element,
@@ -250,8 +263,8 @@ impl DiagonalCellPositions {
         };
     }
 
-    fn down_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions {
+    fn down_right(pos: CellPosition, board: &Board) -> DiagonalCellIter {
+        return DiagonalCellIter {
             pos,
             first_element: board.first_element,
             last_element: board.last_element,
@@ -260,8 +273,8 @@ impl DiagonalCellPositions {
         };
     }
 
-    fn down_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
-        return DiagonalCellPositions {
+    fn down_left(pos: CellPosition, board: &Board) -> DiagonalCellIter {
+        return DiagonalCellIter {
             pos,
             first_element: board.first_element,
             last_element: board.last_element,
@@ -270,6 +283,7 @@ impl DiagonalCellPositions {
         };
     }
 
+    //todo same methods Board has
     fn is_cell_out_of_range(&self, cell: &CellPosition) -> bool {
         return self.is_out_of_range(cell.i) || self.is_out_of_range(cell.j);
     }
@@ -278,7 +292,7 @@ impl DiagonalCellPositions {
     }
 }
 
-impl Iterator for DiagonalCellPositions {
+impl Iterator for DiagonalCellIter {
     type Item = CellPosition;
 
     fn next(&mut self) -> Option<Self::Item> {

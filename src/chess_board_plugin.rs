@@ -1,8 +1,18 @@
-use std::{borrow::BorrowMut};
+use std::borrow::BorrowMut;
 
 use bevy::prelude::*;
 
-use crate::{assets_helper::AssetsHelper, models::{removed_chess_piece::ChessPieceRemovedEvent, chess_move_state::MoveState, common_resources::{Board, BoardPointer}, chess_cell::{ChessCell, ChessCellState}, chess_piece::{ChessPiece, PieceType}, common_chess::ChessColor}};
+use crate::{
+    assets_helper::AssetsHelper,
+    models::{
+        chess_cell::{ChessCell, ChessCellState},
+        chess_move_state::MoveState,
+        chess_piece::{ChessPiece, PieceType},
+        common_chess::ChessColor,
+        common_resources::{Board, BoardPointer},
+        removed_chess_piece::ChessPieceRemovedEvent,
+    },
+};
 
 pub struct ChessBoardPlugin;
 
@@ -36,16 +46,19 @@ fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: R
 }
 
 fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
-    let w_bishop = ChessPiece::new(2, 0, ChessColor::WHITE, PieceType::BISHOP);
     let w_rook = ChessPiece::new(0, 0, ChessColor::WHITE, PieceType::ROOK);
+    let w_knight = ChessPiece::new(1, 0, ChessColor::WHITE, PieceType::KNIGHT);
+    let w_bishop = ChessPiece::new(2, 0, ChessColor::WHITE, PieceType::BISHOP);
     AssetsHelper::spawn_piece(w_bishop, commands.borrow_mut(), &assets, &board);
+    AssetsHelper::spawn_piece(w_knight, commands.borrow_mut(), &assets, &board);
     AssetsHelper::spawn_piece(w_rook, commands.borrow_mut(), &assets, &board);
-    
-    let b_bishop = ChessPiece::new(2, 7, ChessColor::BLACK, PieceType::BISHOP);
-    let b_rook = ChessPiece::new(0, 7, ChessColor::BLACK, PieceType::ROOK);
-    AssetsHelper::spawn_piece(b_bishop, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_rook, commands.borrow_mut(), &assets, &board);
 
+    let b_rook = ChessPiece::new(0, 7, ChessColor::BLACK, PieceType::ROOK);
+    let b_knight = ChessPiece::new(1, 7, ChessColor::BLACK, PieceType::KNIGHT);
+    let b_bishop = ChessPiece::new(2, 7, ChessColor::BLACK, PieceType::BISHOP);
+    AssetsHelper::spawn_piece(b_rook, commands.borrow_mut(), &assets, &board);
+    AssetsHelper::spawn_piece(b_knight, commands.borrow_mut(), &assets, &board);
+    AssetsHelper::spawn_piece(b_bishop, commands.borrow_mut(), &assets, &board);
 
     // for element in PieceParser::parse_map(PieceParser::default_map()) {
     //     if let Some(piece) = element {

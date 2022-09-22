@@ -51,12 +51,7 @@ impl Board {
         self.image_size * self.image_scale
     }
 
-    fn discard_image_size_scaled(&self) -> f32 {
-        self.image_size * self.discard_image_scale()
-    }
-    pub fn discard_image_scale(&self) -> f32 {
-        self.image_scale * 0.8
-    }
+
 
     pub fn board_offset(&self) -> f32 {
         let magic = 60.;
@@ -65,6 +60,36 @@ impl Board {
 
     pub fn coordinates(&self, pos: &CellPosition) -> (f32, f32) {
         return (self.x_coordinate(pos.i), self.y_coordinate(pos.j));
+    }
+
+    fn x_coordinate(&self, pos: i8) -> f32 {
+        self.start_x_point + (pos as f32) * self.image_size_scaled()
+    }
+
+    fn y_coordinate(&self, pos: i8) -> f32 {
+        self.start_y_point + (pos as f32) * self.image_size_scaled()
+    }
+
+    pub fn is_cell_out_of_range(&self, cell: &CellPosition) -> bool {
+        return self.is_out_of_range(cell.i) || self.is_out_of_range(cell.j);
+    }
+    fn is_out_of_range(&self, pos: i8) -> bool {
+        pos < self.first_element || pos > self.last_element
+    }
+
+    pub fn is_cell_matches(&self, pos: &CellPosition, pointer: &BoardPointer) -> bool {
+        let ref this = self;
+        let size = this.image_size_scaled();
+        let x = this.start_x_point + (pos.i as f32) * size;
+        let y = this.start_y_point + (pos.j as f32) * size;
+        return x < pointer.x && y < pointer.y && (x + size) > pointer.x && (y + size) > pointer.y;
+    }
+
+    fn discard_image_size_scaled(&self) -> f32 {
+        self.image_size * self.discard_image_scale()
+    }
+    pub fn discard_image_scale(&self) -> f32 {
+        self.image_scale * 0.8
     }
 
     //todo move to separate  struct DiscardTray
@@ -89,31 +114,16 @@ impl Board {
         return  (x_coordinate, y_coordinate);
 
     }
-    fn x_coordinate(&self, pos: i8) -> f32 {
-        self.start_x_point + (pos as f32) * self.image_size_scaled()
-    }
-
-    fn y_coordinate(&self, pos: i8) -> f32 {
-        self.start_y_point + (pos as f32) * self.image_size_scaled()
-    }
-
-    pub fn is_cell_matches(&self, pos: &CellPosition, pointer: &BoardPointer) -> bool {
-        let ref this = self;
-        let size = this.image_size_scaled();
-        let x = this.start_x_point + (pos.i as f32) * size;
-        let y = this.start_y_point + (pos.j as f32) * size;
-        return x < pointer.x && y < pointer.y && (x + size) > pointer.x && (y + size) > pointer.y;
-    }
 }
 
-pub struct DiscardTray {
-    pub start_x_point: f32,
-    pub start_y_point: f32,
-    pub image_size: f32,
-    pub image_scale: f32,
-    pub first_element: i8,
-    pub last_element: i8,
-}
+// pub struct DiscardTray {
+//     pub start_x_point: f32,
+//     pub start_y_point: f32,
+//     pub image_size: f32,
+//     pub image_scale: f32,
+//     pub first_element: i8,
+//     pub last_element: i8,
+// }
 
 #[derive(Component)]
 pub struct MainCamera;
