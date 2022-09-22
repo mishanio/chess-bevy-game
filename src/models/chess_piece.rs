@@ -1,4 +1,4 @@
-
+use std::cell::Cell;
 
 use bevy::{prelude::*, utils::HashSet};
 
@@ -52,8 +52,8 @@ impl ChessPiece {
             PieceType::ROOK => self.available_cells_for_rook(board, &ally_cells, &enemy_cells),
             PieceType::BISHOP => self.available_cells_for_bishop(board, &ally_cells, &enemy_cells),
             PieceType::KNIGHT => self.available_cells_for_knight(board, &ally_cells, &enemy_cells),
-            PieceType::QUEEN => todo!(),
-            PieceType::KING => todo!(),
+            PieceType::QUEEN => self.available_cells_for_queen(board, &ally_cells, &enemy_cells),
+            PieceType::KING => self.available_cells_for_king(board, pieces, true),
         };
     }
 
@@ -182,8 +182,74 @@ impl ChessPiece {
             i: self.pos.i + *i as i8,
             j: self.pos.j + *j as i8,
         })
-        .filter(|cell_position| !board.is_cell_out_of_range(cell_position) && !ally_cells.contains(cell_position))
+        .filter(|cell_position| {
+            !board.is_cell_out_of_range(cell_position) && !ally_cells.contains(cell_position)
+        })
         .collect();
+    }
+
+    fn available_cells_for_queen(
+        &self,
+        board: &Board,
+        ally_cells: &HashSet<CellPosition>,
+        enemy_cells: &HashSet<CellPosition>,
+    ) -> Vec<CellPosition> {
+        let cells_for_rook = self.available_cells_for_rook(board, ally_cells, enemy_cells);
+        let cells_for_bishop = self.available_cells_for_bishop(board, ally_cells, enemy_cells);
+        return [cells_for_rook, cells_for_bishop].concat();
+    }
+
+    fn available_cells_for_king(
+        &self,
+        board: &Board,
+        pieces: &Vec<&ChessPiece>,
+        skip_check_enemy_king_state: bool,
+    ) -> Vec<CellPosition> {
+       
+        let (ally_cells, enemy_cells) = self.split_pieces_by_color(pieces);
+        let enemy_pieces: Vec<&ChessPiece> = pieces.iter()
+        .map(|cp| *cp)
+        .filter(|chess_piece| self.color != chess_piece.color )
+        .collect();
+
+        let available_by_distance = |cell_position: &CellPosition| -> bool{
+            let is_out_of_range = cell_position.i > self.pos.i + 1
+                || cell_position.i < self.pos.i - 1
+                || cell_position.j > self.pos.j + 1
+                || cell_position.j < self.pos.j - 1;
+            return !is_out_of_range;
+        };
+
+        let not_on_enemy_path = |cell_position: &CellPosition| -> bool {
+            if skip_check_enemy_king_state {
+                return true;
+            }
+            for enemy_piece in &enemy_pieces {
+                if enemy_piece.piece_type == PieceType::KING {
+                    if enemy_piece.available_cells_for_king(board, pieces, true).contains(cell_position){
+                        return false;
+                    }
+                    continue;
+                }
+
+                for enemy_available_cel_position in  enemy_piece.get_available_cells_for_move(board, pieces){
+                    if cell_position.eq(&enemy_available_cel_position) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+
+        let cells: Vec<CellPosition> = self
+            .available_cells_for_queen(board, &ally_cells, &enemy_cells)
+            .iter()
+            .map(|cp| *cp)
+            .filter(available_by_distance)
+            .filter(not_on_enemy_path)
+            .collect();
+
+        return cells;
     }
 
     fn available_line_cells(
