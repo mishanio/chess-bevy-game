@@ -5,8 +5,7 @@ use crate::models::chess_models::{ChessColor, ChessPiece, PieceType};
 pub struct PieceParser;
 
 impl PieceParser {
-    
-    fn mappings<'a>() -> HashMap<&'a str, (ChessColor, PieceType)>{
+    fn mappings<'a>() -> HashMap<&'a str, (ChessColor, PieceType)> {
         return HashMap::from([
             ("b_pa", (ChessColor::BLACK, PieceType::PAWN)),
             ("b_ro", (ChessColor::BLACK, PieceType::ROOK)),
@@ -51,7 +50,7 @@ impl PieceParser {
             .collect();
     }
 
-    fn parse_piece(symbol: &str, i: usize, j: usize,) -> Option<ChessPiece> {
+    fn parse_piece(symbol: &str, i: usize, j: usize) -> Option<ChessPiece> {
         if symbol.eq("none") {
             return None;
         }
@@ -90,6 +89,6 @@ mod run_tests {
 
         assert_eq!(PieceType::BISHOP, chess_piece.piece_type);
         assert_eq!(ChessColor::WHITE, chess_piece.color);
-        assert_eq!(CellPosition {i: 0, j: 1}, chess_piece.pos);
+        assert_eq!(CellPosition { i: 0, j: 1 }, chess_piece.pos);
     }
 }

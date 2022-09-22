@@ -3,6 +3,7 @@ use std::{borrow::BorrowMut};
 use bevy::prelude::*;
 
 use crate::assets_helper::AssetsHelper;
+use crate::models::chess_models::{ChessColor, PieceType};
 use crate::{
     models::chess_models::{
         ChessCell, ChessCellState, ChessPiece, ChessPieceRemovedEvent, MoveState,
@@ -43,11 +44,22 @@ fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: R
 }
 
 fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
-    for element in PieceParser::parse_map(PieceParser::default_map()) {
-        if let Some(piece) = element {
-            AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
-        }
-    }
+    let w_bishop = ChessPiece::new(2, 0, ChessColor::WHITE, PieceType::BISHOP);
+    let w_rook = ChessPiece::new(0, 0, ChessColor::WHITE, PieceType::ROOK);
+    AssetsHelper::spawn_piece(w_bishop, commands.borrow_mut(), &assets, &board);
+    AssetsHelper::spawn_piece(w_rook, commands.borrow_mut(), &assets, &board);
+    
+    let b_bishop = ChessPiece::new(2, 7, ChessColor::BLACK, PieceType::BISHOP);
+    let b_rook = ChessPiece::new(0, 7, ChessColor::BLACK, PieceType::ROOK);
+    AssetsHelper::spawn_piece(b_bishop, commands.borrow_mut(), &assets, &board);
+    AssetsHelper::spawn_piece(b_rook, commands.borrow_mut(), &assets, &board);
+
+
+    // for element in PieceParser::parse_map(PieceParser::default_map()) {
+    //     if let Some(piece) = element {
+    //         AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
+    //     }
+    // }
 }
 
 fn highlight_chess_piece_system(

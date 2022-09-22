@@ -1,7 +1,5 @@
-use bevy::{
-    prelude::*,
-    utils::HashSet,
-};
+
+use bevy::{prelude::*, utils::HashSet};
 
 use crate::models::common_resources::{Board, CellPosition};
 
@@ -26,7 +24,7 @@ impl MoveState {
 }
 
 pub struct ChessPieceRemovedEvent {
-    pub chess_piece: ChessPiece
+    pub chess_piece: ChessPiece,
 }
 
 pub enum ChessCellState {
@@ -43,7 +41,10 @@ pub struct ChessCell {
 }
 impl ChessCell {
     pub fn from(i: i8, j: i8) -> ChessCell {
-        ChessCell { pos: CellPosition { i, j } ,state: ChessCellState::NONE}
+        ChessCell {
+            pos: CellPosition { i, j },
+            state: ChessCellState::NONE,
+        }
     }
     pub fn color(&self) -> ChessColor {
         return if (self.pos.j + self.pos.i) % 2 == 0 {
@@ -55,7 +56,8 @@ impl ChessCell {
 }
 #[derive(Clone, PartialEq, Eq, Hash, Default, Debug)]
 pub enum ChessColor {
-    #[default] WHITE,
+    #[default]
+    WHITE,
     BLACK,
 }
 
@@ -69,12 +71,7 @@ pub enum PieceType {
     KING,
 }
 
-#[derive(Component)]
-pub struct ChessPiece {
-    pub pos: CellPosition,
-    pub color: ChessColor,
-    pub piece_type: PieceType,
-}
+
 
 #[derive(Component)]
 pub struct RemovedChessPiece {
@@ -83,6 +80,62 @@ pub struct RemovedChessPiece {
     pub num: i8,
 }
 
+
+struct DiagonalCellPositions {
+    pos: CellPosition,
+    first_element: i8,
+    last_element: i8,
+    x_direction: i8,
+    y_direction: i8,
+}
+
+impl DiagonalCellPositions {
+
+    fn top_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: 1, y_direction: 1 }
+    }
+
+    fn top_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: -1, y_direction: 1 }
+    }
+
+    fn down_right(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: 1, y_direction: -1 }
+    }
+
+    fn down_left(pos: CellPosition, board: &Board) -> DiagonalCellPositions {
+        return DiagonalCellPositions { pos, first_element: board.first_element, last_element: board.last_element, x_direction: -1, y_direction: -1 }
+    }
+
+    fn is_cell_out_of_range(&self, cell: &CellPosition) -> bool {
+        return self.is_out_of_range(cell.i) || self.is_out_of_range(cell.j);
+    }
+    fn is_out_of_range(&self, pos: i8) -> bool {
+        pos < self.first_element || pos > self.last_element
+    }
+}
+
+impl Iterator for DiagonalCellPositions{
+    type Item = CellPosition;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = CellPosition {i: self.pos.i + self.x_direction, j: self.pos.j + self.y_direction};
+        if self.is_cell_out_of_range(&next) {
+            return None
+        }
+        self.pos = next;
+        return Some(self.pos);
+    }
+}
+
+
+
+#[derive(Component)]
+pub struct ChessPiece {
+    pub pos: CellPosition,
+    pub color: ChessColor,
+    pub piece_type: PieceType,
+}
 impl ChessPiece {
     pub fn new(i: i8, j: i8, color: ChessColor, piece_type: PieceType) -> ChessPiece {
         let pos = CellPosition { i, j };
@@ -101,13 +154,12 @@ impl ChessPiece {
         let (ally_cells, enemy_cells) = self.split_pieces_by_color(pieces);
 
         return match self.piece_type {
-            PieceType::PAWN => {
-                return self.available_cells_for_pawn(board, &ally_cells, &enemy_cells);
-            }
-            PieceType::ROOK => {
-                return self.available_cells_for_rook(board, &ally_cells, &enemy_cells)
-            }
-            _ => vec![],
+            PieceType::PAWN => self.available_cells_for_pawn(board, &ally_cells, &enemy_cells),
+            PieceType::ROOK => self.available_cells_for_rook(board, &ally_cells, &enemy_cells),
+            PieceType::BISHOP => self.available_cells_for_bishop(board, &ally_cells, &enemy_cells),
+            PieceType::KNIGHT => self.available_cells_for_knight(board, &ally_cells, &enemy_cells),
+            PieceType::QUEEN => todo!(),
+            PieceType::KING => todo!(),
         };
     }
 
@@ -121,11 +173,11 @@ impl ChessPiece {
         let is_first_move = (self.color == ChessColor::WHITE
             && self.pos.j == board.first_element + 1)
             || (self.color == ChessColor::BLACK && self.pos.j == board.last_element - 1);
-        let direction_coefficient: i8 = match self.color  {
+        let direction_coefficient: i8 = match self.color {
             ChessColor::WHITE => 1,
             ChessColor::BLACK => -1,
         };
-        
+
         let cell_1 = CellPosition {
             i: self.pos.i,
             j: self.pos.j + 1 * direction_coefficient,
@@ -178,27 +230,57 @@ impl ChessPiece {
             .map(|j| CellPosition { i: self.pos.i, j })
             .collect();
 
-        let available_line_cells = |range| {
-            let mut available_cells = Vec::new();
-            for cell in range {
-                if ally_cells.contains(&cell) {
-                    break;
-                }
-                if enemy_cells.contains(&cell) {
-                    available_cells.push(cell);
-                    break;
-                }
-                available_cells.push(cell)
-            }
-            return available_cells;
-        };
-
-        let range_right = available_line_cells(range_right);
-        let range_left = available_line_cells(range_left);
-        let range_up = available_line_cells(range_up);
-        let range_down = available_line_cells(range_down);
+        let range_right = self.available_line_cells(range_right, ally_cells, enemy_cells);
+        let range_left = self.available_line_cells(range_left, ally_cells, enemy_cells);
+        let range_up = self.available_line_cells(range_up, ally_cells, enemy_cells);
+        let range_down = self.available_line_cells(range_down, ally_cells, enemy_cells);
 
         return [range_right, range_left, range_down, range_up].concat();
+    }
+
+    fn available_cells_for_bishop(
+        &self,
+        board: &Board,
+        ally_cells: &HashSet<CellPosition>,
+        enemy_cells: &HashSet<CellPosition>,
+    ) -> Vec<CellPosition> {
+        let range_top_right: Vec<CellPosition> = DiagonalCellPositions::top_right(self.pos, board).collect();
+        let range_top_left: Vec<CellPosition> = DiagonalCellPositions::top_left(self.pos, board).into_iter().collect();
+        let range_down_right: Vec<CellPosition> = DiagonalCellPositions::down_right(self.pos, board).into_iter().collect();
+        let range_down_left: Vec<CellPosition> = DiagonalCellPositions::down_left(self.pos, board).into_iter().collect();
+
+        let range_top_right = self.available_line_cells(range_top_right, ally_cells, enemy_cells);
+        let range_top_left = self.available_line_cells(range_top_left, ally_cells, enemy_cells);
+        let range_down_right = self.available_line_cells(range_down_right, ally_cells, enemy_cells);
+        let range_down_left = self.available_line_cells(range_down_left, ally_cells, enemy_cells);
+
+        return [range_top_right, range_top_left, range_down_right, range_down_left].concat();
+    }
+
+    fn available_cells_for_knight(
+        &self,
+        board: &Board,
+        ally_cells: &HashSet<CellPosition>,
+        enemy_cells: &HashSet<CellPosition>,
+    ) -> Vec<CellPosition> {
+        vec![]
+    
+    }
+
+    fn available_line_cells(&self,range: Vec<CellPosition>,  ally_cells: &HashSet<CellPosition>,
+        enemy_cells: &HashSet<CellPosition>) -> Vec<CellPosition> {
+        let mut available_cells = Vec::new();
+        for cell in range {
+            if ally_cells.contains(&cell) {
+                break;
+            }
+            if enemy_cells.contains(&cell) {
+                available_cells.push(cell);
+                break;
+            }
+            available_cells.push(cell)
+        }
+        return available_cells;
     }
 
     fn split_pieces_by_color(
