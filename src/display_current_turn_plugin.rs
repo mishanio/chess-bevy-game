@@ -12,9 +12,12 @@ pub struct DisplayCurrentTurnPlugin;
 
 impl Plugin for DisplayCurrentTurnPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(StartupStage::PreStartup, set_up_display_turn_components)
-            .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
-            .add_system(display_current_turn_system);
+        app.add_startup_system_to_stage(
+            StartupStage::PreStartup,
+            set_up_display_turn_resource_system,
+        )
+        .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
+        .add_system(display_current_turn_system);
     }
 }
 
