@@ -1,4 +1,4 @@
-use bevy::{prelude::*, text::Text2dSize, transform};
+use bevy::{prelude::*, text::Text2dSize};
 
 use crate::{
     assets_helper::AssetsHelper,
