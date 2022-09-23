@@ -8,6 +8,9 @@ pub struct MoveState {
     pub selected_cell: Option<Entity>,
     pub move_in_action: bool,
     pub current_collor: ChessColor,
+    pub is_chess_state: bool,
+    pub is_mat_state: bool,
+    pub is_pat_state: bool,
 }
 
 impl MoveState {

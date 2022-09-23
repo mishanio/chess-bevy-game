@@ -72,7 +72,7 @@ impl AssetsHelper {
     }
 
 
-    fn load_piece_image(
+    pub fn load_piece_image(
         color: &ChessColor,
         piece_type: &PieceType,
         assets: &AssetServer,

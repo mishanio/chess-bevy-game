@@ -3,16 +3,18 @@ use bevy::{prelude::*, window::WindowMode};
 use chess_board_plugin::ChessBoardPlugin;
 use cursor_cords_plugin::CursorCordsPlugin;
 use custom_cursor_plugin::CustomCursorPlugin;
+use display_current_turn_plugin::DisplayCurrentTurnPlugin;
 use models::common_resources::{Board, BoardPointer, MainCamera};
 
 use crate::discard_tray_plugin::DiscardTrayPlugin;
 
-mod cursor_cords_plugin;
-mod chess_board_plugin;
-mod custom_cursor_plugin;
-mod models;
-mod discard_tray_plugin;
 mod assets_helper;
+mod chess_board_plugin;
+mod cursor_cords_plugin;
+mod custom_cursor_plugin;
+mod discard_tray_plugin;
+mod display_current_turn_plugin;
+mod models;
 mod piece_parser;
 
 fn main() {
@@ -20,6 +22,8 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
         .insert_resource(WindowDescriptor {
             title: "Chess Game".to_string(),
+            // width: 1920.,
+            // height: 1080.,
             mode: WindowMode::Windowed,
             ..Default::default()
         })
@@ -29,6 +33,7 @@ fn main() {
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
         .add_plugin(DiscardTrayPlugin)
+        .add_plugin(DisplayCurrentTurnPlugin)
         .run();
 }
 

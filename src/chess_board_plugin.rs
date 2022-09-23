@@ -12,6 +12,7 @@ use crate::{
         common_resources::{Board, BoardPointer},
         removed_chess_piece::ChessPieceRemovedEvent,
     },
+    piece_parser::PieceParser,
 };
 
 pub struct ChessBoardPlugin;
@@ -46,34 +47,33 @@ fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: R
 }
 
 fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
-    let w_rook = ChessPiece::new(0, 0, ChessColor::WHITE, PieceType::ROOK);
-    let w_knight = ChessPiece::new(1, 0, ChessColor::WHITE, PieceType::KNIGHT);
-    let w_bishop = ChessPiece::new(2, 0, ChessColor::WHITE, PieceType::BISHOP);
-    let w_king = ChessPiece::new(3, 0, ChessColor::WHITE, PieceType::KING);
-    let w_queen = ChessPiece::new(4, 0, ChessColor::WHITE, PieceType::QUEEN);
-    AssetsHelper::spawn_piece(w_bishop, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_knight, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_rook, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_king, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_queen, commands.borrow_mut(), &assets, &board);
+    // let w_rook = ChessPiece::new(0, 0, ChessColor::WHITE, PieceType::ROOK);
+    // let w_knight = ChessPiece::new(1, 0, ChessColor::WHITE, PieceType::KNIGHT);
+    // let w_bishop = ChessPiece::new(2, 0, ChessColor::WHITE, PieceType::BISHOP);
+    // let w_king = ChessPiece::new(3, 0, ChessColor::WHITE, PieceType::KING);
+    // let w_queen = ChessPiece::new(4, 0, ChessColor::WHITE, PieceType::QUEEN);
+    // AssetsHelper::spawn_piece(w_bishop, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(w_knight, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(w_rook, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(w_king, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(w_queen, commands.borrow_mut(), &assets, &board);
 
+    // let b_rook = ChessPiece::new(0, 7, ChessColor::BLACK, PieceType::ROOK);
+    // let b_knight = ChessPiece::new(1, 7, ChessColor::BLACK, PieceType::KNIGHT);
+    // let b_bishop = ChessPiece::new(2, 7, ChessColor::BLACK, PieceType::BISHOP);
+    // let b_king = ChessPiece::new(3, 7, ChessColor::BLACK, PieceType::KING);
+    // let b_queen = ChessPiece::new(4, 7, ChessColor::BLACK, PieceType::QUEEN);
+    // AssetsHelper::spawn_piece(b_rook, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(b_knight, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(b_bishop, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(b_king, commands.borrow_mut(), &assets, &board);
+    // AssetsHelper::spawn_piece(b_queen, commands.borrow_mut(), &assets, &board);
 
-    let b_rook = ChessPiece::new(0, 7, ChessColor::BLACK, PieceType::ROOK);
-    let b_knight = ChessPiece::new(1, 7, ChessColor::BLACK, PieceType::KNIGHT);
-    let b_bishop = ChessPiece::new(2, 7, ChessColor::BLACK, PieceType::BISHOP);
-    let b_king = ChessPiece::new(3, 7, ChessColor::BLACK, PieceType::KING);
-    let b_queen = ChessPiece::new(4, 7, ChessColor::BLACK, PieceType::QUEEN);
-    AssetsHelper::spawn_piece(b_rook, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_knight, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_bishop, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_king, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_queen, commands.borrow_mut(), &assets, &board);
-
-    // for element in PieceParser::parse_map(PieceParser::default_map()) {
-    //     if let Some(piece) = element {
-    //         AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
-    //     }
-    // }
+    for element in PieceParser::parse_map(PieceParser::default_map()) {
+        if let Some(piece) = element {
+            AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
+        }
+    }
 }
 
 fn highlight_chess_piece_system(

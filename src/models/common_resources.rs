@@ -13,7 +13,7 @@ pub struct BoardPointer {
     pub y: f32,
 }
 
-// position of a cell on board 
+// position of a cell on board
 #[derive(Copy, Clone, Hash, PartialEq, Eq, Debug)]
 pub struct CellPosition {
     pub i: i8,
@@ -29,7 +29,6 @@ pub struct Board {
     pub first_element: i8,
     pub last_element: i8,
 }
-
 
 impl Board {
     pub fn new(x: f32, y: f32, i_size: f32, i_scale: f32) -> Board {
@@ -47,11 +46,9 @@ impl Board {
         return self.first_element..self.last_element + 1;
     }
 
-    fn image_size_scaled(&self) -> f32 {
+    pub fn image_size_scaled(&self) -> f32 {
         self.image_size * self.image_scale
     }
-
-
 
     pub fn board_offset(&self) -> f32 {
         let magic = 60.;
@@ -85,34 +82,46 @@ impl Board {
         return x < pointer.x && y < pointer.y && (x + size) > pointer.x && (y + size) > pointer.y;
     }
 
-    fn discard_image_size_scaled(&self) -> f32 {
-        self.image_size * self.discard_image_scale()
+    pub fn end_x_point(&self) -> f32 {
+        self.start_x_point + (self.last_element as f32 + 1.) * self.image_size_scaled()
     }
-    pub fn discard_image_scale(&self) -> f32 {
-        self.image_scale * 0.8
+
+    pub fn end_y_point(&self) -> f32 {
+        self.start_y_point + (self.last_element as f32 + 1.) * self.image_size_scaled()
     }
 
     //todo move to separate  struct DiscardTray
     pub fn discard_tray_position(&self, element_num: i8, position: &DiscardArea) -> (f32, f32) {
         let board_discard_tray_offset = 1.;
-        let direction_coefficient = match position  {
+        let direction_coefficient = match position {
             DiscardArea::TOP => 1.,
             DiscardArea::BOTTOM => -1.,
         };
         let discard_start_y_offset = match position {
-            DiscardArea::TOP => 
-                    self.start_y_point + (self.last_element as f32 + board_discard_tray_offset) * self.image_size_scaled() + self.discard_image_size_scaled(),
-            DiscardArea::BOTTOM => 
-                self.start_y_point - board_discard_tray_offset * self.image_size_scaled() - self.discard_image_size_scaled(),
+            DiscardArea::TOP => self.end_y_point() + self.discard_image_size_scaled(),
+            DiscardArea::BOTTOM => {
+                self.start_y_point
+                    - board_discard_tray_offset * self.image_size_scaled()
+                    - self.discard_image_size_scaled()
+            }
         };
 
         let y_coordinate = discard_start_y_offset
-        + direction_coefficient * (element_num / self.last_element) as f32 * self.discard_image_size_scaled();
-        let x_coordinate = self.start_x_point + 
-        (element_num % self.last_element) as f32 * self.discard_image_size_scaled();
+            + direction_coefficient
+                * (element_num / self.last_element) as f32
+                * self.discard_image_size_scaled();
+        let x_coordinate = self.start_x_point
+            + (element_num % self.last_element) as f32 * self.discard_image_size_scaled();
 
-        return  (x_coordinate, y_coordinate);
+        return (x_coordinate, y_coordinate);
+    }
 
+    pub fn discard_image_scale(&self) -> f32 {
+        self.image_scale * 0.8
+    }
+
+    fn discard_image_size_scaled(&self) -> f32 {
+        self.image_size * self.discard_image_scale()
     }
 }
 
