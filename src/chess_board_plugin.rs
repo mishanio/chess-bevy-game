@@ -155,11 +155,11 @@ fn calculate_chess_cell_state_system(
 
 fn draw_highlight_chess_cell_system(mut q_chess_cells: Query<(&mut Sprite, &ChessCell)>) {
     for (mut sprite, chess_cell) in q_chess_cells.iter_mut() {
-        match chess_cell.state {
-            ChessCellState::NONE => sprite.color.set_r(1.),
-            ChessCellState::HIGHLIGHTED => sprite.color.set_r(0.7),
-            ChessCellState::SELECTED => sprite.color.set_r(0.5),
-            ChessCellState::ATTACKED => sprite.color.set_r(0.0),
+        sprite.color = match chess_cell.state {
+            ChessCellState::NONE => Color::rgb(1., 1., 1.),
+            ChessCellState::HIGHLIGHTED => Color::rgb(0.8, 1., 1.),
+            ChessCellState::SELECTED => Color::rgb(0.7, 1., 1.),
+            ChessCellState::ATTACKED => Color::ORANGE_RED,
         };
     }
 }
