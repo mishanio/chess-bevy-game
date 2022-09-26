@@ -51,7 +51,7 @@ impl ChessPiece {
             PieceType::BISHOP => self.available_cells_for_bishop(board, &ally_cells, &enemy_cells),
             PieceType::KNIGHT => self.available_cells_for_knight(board, &ally_cells, &enemy_cells),
             PieceType::QUEEN => self.available_cells_for_queen(board, &ally_cells, &enemy_cells),
-            PieceType::KING => self.available_cells_for_king(board, pieces, true),
+            PieceType::KING => self.available_cells_for_king(board, pieces, false),
         };
     }
 
@@ -203,14 +203,9 @@ impl ChessPiece {
         pieces: &Vec<&ChessPiece>,
         skip_check_enemy_king_state: bool,
     ) -> Vec<CellPosition> {
-       
         let (ally_cells, enemy_cells) = self.split_pieces_by_color(pieces);
-        let enemy_pieces: Vec<&ChessPiece> = pieces.iter()
-        .map(|cp| *cp)
-        .filter(|chess_piece| self.color != chess_piece.color )
-        .collect();
 
-        let available_by_distance = |cell_position: &CellPosition| -> bool{
+        let available_by_distance = |cell_position: &CellPosition| -> bool {
             let is_out_of_range = cell_position.i > self.pos.i + 1
                 || cell_position.i < self.pos.i - 1
                 || cell_position.j > self.pos.j + 1
@@ -222,21 +217,7 @@ impl ChessPiece {
             if skip_check_enemy_king_state {
                 return true;
             }
-            for enemy_piece in &enemy_pieces {
-                if enemy_piece.piece_type == PieceType::KING {
-                    if enemy_piece.available_cells_for_king(board, pieces, true).contains(cell_position){
-                        return false;
-                    }
-                    continue;
-                }
-
-                for enemy_available_cel_position in  enemy_piece.get_available_cells_for_move(board, pieces){
-                    if cell_position.eq(&enemy_available_cel_position) {
-                        return false;
-                    }
-                }
-            }
-            return true;
+            !ChessPiece::is_cell_on_enemy_path(&self.color, cell_position, pieces, board)
         };
 
         let cells: Vec<CellPosition> = self
@@ -248,6 +229,56 @@ impl ChessPiece {
             .collect();
 
         return cells;
+    }
+
+    fn is_cell_on_enemy_path(
+        color: &ChessColor,
+        cell_position: &CellPosition,
+        pieces: &Vec<&ChessPiece>,
+        board: &Board,
+    ) -> bool {
+        let enemy_pieces: Vec<&ChessPiece> = pieces
+            .iter()
+            .map(|cp| *cp)
+            .filter(|chess_piece| !chess_piece.color.eq(color))
+            .collect();
+        for enemy_piece in &enemy_pieces {
+            if enemy_piece.piece_type == PieceType::KING {
+                if enemy_piece
+                    .available_cells_for_king(board, pieces, true)
+                    .contains(cell_position)
+                {
+                    return true;
+                }
+                continue;
+            }
+
+            for enemy_available_cel_position in
+                enemy_piece.get_available_cells_for_move(board, pieces)
+            {
+                if enemy_available_cel_position.eq(cell_position) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    pub fn is_king_under_check(
+        color: &ChessColor,
+        pieces: &Vec<&ChessPiece>,
+        board: &Board,
+    ) -> bool {
+        let king = pieces
+            .iter()
+            .find(|piece| piece.color.eq(color) && piece.piece_type == PieceType::KING);
+
+        if king.is_none() {
+            return false;
+        }
+        let king_position = king.unwrap().pos;
+
+        return ChessPiece::is_cell_on_enemy_path(color, &king_position, pieces, board);
     }
 
     fn available_line_cells(

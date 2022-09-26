@@ -8,9 +8,9 @@ pub struct MoveState {
     pub selected_cell: Option<Entity>,
     pub move_in_action: bool,
     pub current_collor: ChessColor,
-    pub is_chess_state: bool,
-    pub is_mat_state: bool,
-    pub is_pat_state: bool,
+    pub is_check_state: bool,
+    pub is_mate_state: bool,
+    pub is_stalemate_state: bool,
 }
 
 impl MoveState {
@@ -18,9 +18,6 @@ impl MoveState {
         self.move_in_action = false;
         self.selected_cell = None;
         self.selected_piece = None;
-        self.current_collor = match self.current_collor {
-            ChessColor::BLACK => ChessColor::WHITE,
-            ChessColor::WHITE => ChessColor::BLACK,
-        }
+        self.current_collor = self.current_collor.opposite();
     }
 }

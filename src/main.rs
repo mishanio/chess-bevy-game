@@ -22,8 +22,8 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
         .insert_resource(WindowDescriptor {
             title: "Chess Game".to_string(),
-            // width: 1920.,
-            // height: 1080.,
+            width: 1920.,
+            height: 1080.,
             mode: WindowMode::Windowed,
             ..Default::default()
         })

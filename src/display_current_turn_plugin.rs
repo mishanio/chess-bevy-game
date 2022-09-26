@@ -41,6 +41,9 @@ struct CurentTurnImage;
 #[derive(Component)]
 struct CurentTurnText;
 
+#[derive(Component)]
+struct CheckStateText;
+
 fn set_up_display_turn_resource_system(mut commands: Commands, assets: Res<AssetServer>) {
     let move_image_holder = TurnImageHolder {
         white_turn_img: AssetsHelper::load_piece_image(
@@ -79,14 +82,15 @@ fn set_up_display_turn_components(
         })
         .insert(CurentTurnImage);
 
-    let text_style = TextStyle {
-        font: assets.load("fonts/FiraMono-Medium.ttf"),
-        font_size: 30.0,
-        color: Color::WHITE,
-    };
-
     let current_move_text_bundle = Text2dBundle {
-        text: Text::from_section("Move:", text_style),
+        text: Text::from_section(
+            "Move:",
+            TextStyle {
+                font: assets.load("fonts/FiraMono-Medium.ttf"),
+                font_size: 30.0,
+                color: Color::WHITE,
+            },
+        ),
         transform: Transform {
             translation: Vec3::new(text_x, text_y, 0.0),
             scale: Vec3::splat(1.0),
@@ -98,6 +102,26 @@ fn set_up_display_turn_components(
     commands
         .spawn_bundle(current_move_text_bundle)
         .insert(CurentTurnText);
+
+    let check_state_text_bundle = Text2dBundle {
+        text: Text::from_section(
+            "Check!",
+            TextStyle {
+                font: assets.load("fonts/FiraMono-Medium.ttf"),
+                font_size: 30.0,
+                color: Color::RED,
+            },
+        ),
+        transform: Transform {
+            translation: Vec3::new(text_x, text_y - 40., 0.0),
+            scale: Vec3::splat(1.0),
+            ..default()
+        },
+        ..default()
+    };
+    commands
+        .spawn_bundle(check_state_text_bundle)
+        .insert(CheckStateText);
 }
 
 fn display_current_turn_system(
