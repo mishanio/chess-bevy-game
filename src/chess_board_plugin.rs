@@ -77,7 +77,7 @@ fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, 
 }
 
 fn highlight_chess_piece_system(
-    mut q_chess_cells: Query<(Entity, &mut Transform, &ChessPiece)>,
+    mut q_chess_piece: Query<(Entity, &mut Transform, &ChessPiece)>,
     board_pointer: Res<BoardPointer>,
     move_sate: Res<MoveState>,
     board: Res<Board>,
@@ -85,7 +85,7 @@ fn highlight_chess_piece_system(
     if move_sate.move_in_action {
         return;
     }
-    for (entity, mut transform, chess_piece) in q_chess_cells.iter_mut() {
+    for (entity, mut transform, chess_piece) in q_chess_piece.iter_mut() {
         if Some(entity).eq(&move_sate.selected_piece) {
             transform.scale = Vec3::splat(board.image_scale * 1.1);
         } else if board.is_cell_matches(&chess_piece.pos, &board_pointer)
@@ -223,7 +223,20 @@ fn set_cell_selected(
             continue;
         }
         if board.is_cell_matches(&cell.pos, &pointer) && available_cells.contains(&cell.pos) {
-            if ChessPiece::is_king_under_check(&selected_piece.color, &pieces, &board) {
+            //todo need to add to
+            let mut pieces_after_move: Vec<&ChessPiece> = pieces
+                .iter()
+                .filter(|p| p.pos != selected_piece.pos)
+                .map(|p| *p)
+                .collect();
+            let change_piece = selected_piece.clone_with_new_position(&cell.pos);
+            pieces_after_move.push(&change_piece);
+
+            if ChessPiece::is_king_under_check(
+                &selected_piece.color.opposite(),
+                &pieces_after_move,
+                &board,
+            ) {
                 move_state.is_check_state = true;
             }
 
@@ -271,6 +284,8 @@ fn move_piece_system(
     chess_piece.pos = chess_cell.pos;
 
     let (target_x, target_y) = board.coordinates(&chess_piece.pos);
+
+    // let target_vec = Vec3::new(target_x, target_y, 0.0);
     // let current_x = board.x_coordinate(chess_piece.i);
     // let current_y =  board.y_coordinate(chess_piece.j);
 

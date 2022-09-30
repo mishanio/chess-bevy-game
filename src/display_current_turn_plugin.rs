@@ -6,6 +6,7 @@ use crate::{
         chess_move_state::MoveState, chess_piece::PieceType, common_chess::ChessColor,
         common_resources::Board,
     },
+    titles::Titles,
 };
 
 pub struct DisplayCurrentTurnPlugin;
@@ -17,7 +18,8 @@ impl Plugin for DisplayCurrentTurnPlugin {
             set_up_display_turn_resource_system,
         )
         .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
-        .add_system(display_current_turn_system);
+        .add_system(display_current_turn_system)
+        .add_system(display_check_state_system);
     }
 }
 
@@ -66,6 +68,7 @@ fn set_up_display_turn_components(
     move_state: Res<MoveState>,
     assets: Res<AssetServer>,
     board: Res<Board>,
+    titles: Res<Titles>,
 ) {
     let text_x = board.end_x_point();
     let text_y = board.end_y_point() - board.image_size_scaled() / 2.;
@@ -84,7 +87,7 @@ fn set_up_display_turn_components(
 
     let current_move_text_bundle = Text2dBundle {
         text: Text::from_section(
-            "Move:",
+            titles.turn.clone(),
             TextStyle {
                 font: assets.load("fonts/FiraMono-Medium.ttf"),
                 font_size: 30.0,
@@ -105,7 +108,7 @@ fn set_up_display_turn_components(
 
     let check_state_text_bundle = Text2dBundle {
         text: Text::from_section(
-            "Check!",
+            titles.check.clone(),
             TextStyle {
                 font: assets.load("fonts/FiraMono-Medium.ttf"),
                 font_size: 30.0,
@@ -143,4 +146,12 @@ fn display_current_turn_system(
     *image = turn_image_holder.get_image(&move_state.current_collor);
     image_transform.translation.x = text_transform.translation.x + text_size.size.x + 30.;
     image_transform.translation.y = text_transform.translation.y - text_size.size.y / 2.5;
+}
+
+fn display_check_state_system(
+    mut q_check_status: Query<&mut Visibility, With<CheckStateText>>,
+    move_state: Res<MoveState>,
+) {
+    let mut check_state_visibility = q_check_status.single_mut();
+    check_state_visibility.is_visible = move_state.is_check_state;
 }

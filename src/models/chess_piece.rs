@@ -22,7 +22,7 @@ struct DiagonalCellIter {
     y_direction: i8,
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct ChessPiece {
     pub pos: CellPosition,
     pub color: ChessColor,
@@ -35,6 +35,14 @@ impl ChessPiece {
             pos,
             color,
             piece_type,
+        }
+    }
+
+    pub fn clone_with_new_position(&self, pos: &CellPosition) -> ChessPiece {
+        ChessPiece {
+            pos: pos.clone(),
+            color: self.color.clone(),
+            piece_type: self.piece_type.clone(),
         }
     }
 

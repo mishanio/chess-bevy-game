@@ -5,6 +5,7 @@ use cursor_cords_plugin::CursorCordsPlugin;
 use custom_cursor_plugin::CustomCursorPlugin;
 use display_current_turn_plugin::DisplayCurrentTurnPlugin;
 use models::common_resources::{Board, BoardPointer, MainCamera};
+use titles::{TitleLocale, Titles};
 
 use crate::discard_tray_plugin::DiscardTrayPlugin;
 
@@ -16,17 +17,20 @@ mod discard_tray_plugin;
 mod display_current_turn_plugin;
 mod models;
 mod piece_parser;
+mod titles;
 
 fn main() {
+    let titles = Titles::new(TitleLocale::RU);
     App::new()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
         .insert_resource(WindowDescriptor {
-            title: "Chess Game".to_string(),
-            width: 1920.,
-            height: 1080.,
+            title: titles.title.clone(),
+            // width: 1920.,
+            // height: 1080.,
             mode: WindowMode::Windowed,
             ..Default::default()
         })
+        .insert_resource(titles)
         .add_plugins(DefaultPlugins)
         .add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
         .add_plugin(ChessBoardPlugin)
