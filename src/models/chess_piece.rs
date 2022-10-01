@@ -2,7 +2,7 @@ use bevy::{prelude::*, utils::HashSet};
 
 use crate::models::common_resources::{Board, CellPosition};
 
-use super::common_chess::ChessColor;
+use super::{chess_cell::ChessCell, common_chess::ChessColor};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum PieceType {
@@ -270,6 +270,32 @@ impl ChessPiece {
             }
         }
         return false;
+    }
+
+    pub fn pieces_after_move<'a>(
+        pieces: &Vec<&'a ChessPiece>,
+        cell: &ChessCell,
+        cloned_selected_piece: &'a mut ChessPiece,
+    ) -> (Option<&'a ChessPiece>, Vec<&'a ChessPiece>) {
+        let maybe_removed_piece = pieces
+            .iter()
+            .find(|chess_piece| chess_piece.pos == cell.pos)
+            .map(|cp| *cp);
+
+        let mut pieces_after_move: Vec<&ChessPiece> = pieces
+            .iter()
+            .filter(|piece| piece.pos != cloned_selected_piece.pos)
+            .filter(|piece| {
+                maybe_removed_piece
+                    .filter(|rm_piece| piece.pos == rm_piece.pos)
+                    .is_none()
+            })
+            .map(|p| *p)
+            .collect();
+
+        cloned_selected_piece.pos = cell.pos;
+        pieces_after_move.push(cloned_selected_piece);
+        (maybe_removed_piece, pieces_after_move)
     }
 
     pub fn is_king_under_check(

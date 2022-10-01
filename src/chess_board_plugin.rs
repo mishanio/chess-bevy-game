@@ -225,24 +225,9 @@ fn set_cell_selected(
             continue;
         }
         if board.is_cell_matches(&cell.pos, &pointer) && available_cells.contains(&cell.pos) {
-            let maybe_removed_piece = pieces
-                .iter()
-                .find(|chess_piece| chess_piece.pos == cell.pos);
-
-            let changed_piece = selected_piece.clone_with_new_position(&cell.pos);
-
-            let mut pieces_after_move: Vec<&ChessPiece> = pieces
-                .iter()
-                .filter(|piece| piece.pos != selected_piece.pos)
-                .filter(|piece| {
-                    maybe_removed_piece
-                        .filter(|rm_piece| piece.pos == rm_piece.pos)
-                        .is_none()
-                })
-                .map(|p| *p)
-                .collect();
-
-            pieces_after_move.push(&changed_piece);
+            let mut cloned_selected_piece = selected_piece.clone();
+            let (maybe_removed_piece, pieces_after_move) =
+                ChessPiece::pieces_after_move(&pieces, &cell, &mut cloned_selected_piece);
 
             let move_not_allowed =
                 ChessPiece::is_king_under_check(&selected_piece.color, &pieces_after_move, &board);
