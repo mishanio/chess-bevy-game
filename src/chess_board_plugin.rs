@@ -12,7 +12,7 @@ use crate::{
         common_resources::{Board, BoardPointer},
         removed_chess_piece::ChessPieceRemovedEvent,
     },
-    piece_parser::PieceParser,
+    // piece_parser::PieceParser,
 };
 
 pub struct ChessBoardPlugin;
@@ -208,6 +208,8 @@ fn set_cell_selected(
         return;
     }
 
+    // if move_state.check_state.filter(predicate) move_state.current_collor)) {}
+
     let selected_piece = q_chess_piece.get(move_state.selected_piece.unwrap()).ok();
     if selected_piece.is_none() {
         return;
@@ -223,27 +225,39 @@ fn set_cell_selected(
             continue;
         }
         if board.is_cell_matches(&cell.pos, &pointer) && available_cells.contains(&cell.pos) {
-            //todo need to add to
+            let maybe_removed_piece = pieces
+                .iter()
+                .find(|chess_piece| chess_piece.pos == cell.pos);
+
+            let changed_piece = selected_piece.clone_with_new_position(&cell.pos);
+
             let mut pieces_after_move: Vec<&ChessPiece> = pieces
                 .iter()
-                .filter(|p| p.pos != selected_piece.pos)
+                .filter(|piece| piece.pos != selected_piece.pos)
+                .filter(|piece| {
+                    maybe_removed_piece
+                        .filter(|rm_piece| piece.pos == rm_piece.pos)
+                        .is_none()
+                })
                 .map(|p| *p)
                 .collect();
-            let change_piece = selected_piece.clone_with_new_position(&cell.pos);
-            pieces_after_move.push(&change_piece);
 
-            if ChessPiece::is_king_under_check(
-                &selected_piece.color.opposite(),
-                &pieces_after_move,
-                &board,
-            ) {
-                move_state.is_check_state = true;
+            pieces_after_move.push(&changed_piece);
+
+            let move_not_allowed =
+                ChessPiece::is_king_under_check(&selected_piece.color, &pieces_after_move, &board);
+            if move_not_allowed {
+                return;
             }
 
-            if let Some(piece_to_remove) = pieces
-                .iter()
-                .find(|chess_piece| chess_piece.pos == cell.pos)
-            {
+            let color = selected_piece.color.opposite();
+            if ChessPiece::is_king_under_check(&color, &pieces_after_move, &board) {
+                move_state.check_state = Option::Some(color);
+            } else {
+                move_state.check_state = None;
+            }
+
+            if let Some(piece_to_remove) = maybe_removed_piece {
                 piece_taken_event_writer.send(ChessPieceRemovedEvent {
                     chess_piece: ChessPiece {
                         pos: piece_to_remove.pos,

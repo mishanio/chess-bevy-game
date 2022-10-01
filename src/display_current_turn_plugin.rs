@@ -153,5 +153,5 @@ fn display_check_state_system(
     move_state: Res<MoveState>,
 ) {
     let mut check_state_visibility = q_check_status.single_mut();
-    check_state_visibility.is_visible = move_state.is_check_state;
+    check_state_visibility.is_visible = move_state.check_state.is_some();
 }

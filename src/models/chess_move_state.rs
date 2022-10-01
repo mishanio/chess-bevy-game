@@ -8,7 +8,7 @@ pub struct MoveState {
     pub selected_cell: Option<Entity>,
     pub move_in_action: bool,
     pub current_collor: ChessColor,
-    pub is_check_state: bool,
+    pub check_state: Option<ChessColor>,
     pub is_mate_state: bool,
     pub is_stalemate_state: bool,
 }

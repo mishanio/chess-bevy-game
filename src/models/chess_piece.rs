@@ -289,6 +289,22 @@ impl ChessPiece {
         return ChessPiece::is_cell_on_enemy_path(color, &king_position, pieces, board);
     }
 
+    //TODO
+    pub fn is_king_under_mate(
+        color: &ChessColor,
+        pieces: &Vec<&ChessPiece>,
+        board: &Board,
+    ) -> bool {
+        let ally_pieces = pieces.iter().find(|piece| piece.color.eq(color));
+        for ally_piece in ally_pieces {
+            for cell_position in ally_piece.get_available_cells_for_move(board, pieces) {
+                // let change_piece = ally_piece.clone_with_new_position(&cell.pos);
+                return true;
+            }
+        }
+        return true;
+    }
+
     fn available_line_cells(
         &self,
         range: Vec<CellPosition>,
