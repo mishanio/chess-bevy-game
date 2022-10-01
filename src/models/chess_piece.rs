@@ -274,12 +274,12 @@ impl ChessPiece {
 
     pub fn pieces_after_move<'a>(
         pieces: &Vec<&'a ChessPiece>,
-        cell: &ChessCell,
+        cell_position: &CellPosition,
         cloned_selected_piece: &'a mut ChessPiece,
     ) -> (Option<&'a ChessPiece>, Vec<&'a ChessPiece>) {
         let maybe_removed_piece = pieces
             .iter()
-            .find(|chess_piece| chess_piece.pos == cell.pos)
+            .find(|chess_piece| chess_piece.pos.eq(cell_position))
             .map(|cp| *cp);
 
         let mut pieces_after_move: Vec<&ChessPiece> = pieces
@@ -293,7 +293,7 @@ impl ChessPiece {
             .map(|p| *p)
             .collect();
 
-        cloned_selected_piece.pos = cell.pos;
+        cloned_selected_piece.pos = cell_position.clone();
         pieces_after_move.push(cloned_selected_piece);
         (maybe_removed_piece, pieces_after_move)
     }
@@ -324,8 +324,16 @@ impl ChessPiece {
         let ally_pieces = pieces.iter().find(|piece| piece.color.eq(color));
         for ally_piece in ally_pieces {
             for cell_position in ally_piece.get_available_cells_for_move(board, pieces) {
-                // let change_piece = ally_piece.clone_with_new_position(&cell.pos);
-                return true;
+                let p = *ally_piece;
+                let mut cloned_selected_piece = p.clone();
+                let (_, pieces_after_move) = ChessPiece::pieces_after_move(
+                    pieces,
+                    &cell_position,
+                    &mut cloned_selected_piece,
+                );
+                if ChessPiece::is_king_under_check(color, &pieces_after_move, board) {
+                    return false;
+                }
             }
         }
         return true;

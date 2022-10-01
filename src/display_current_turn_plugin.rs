@@ -19,7 +19,8 @@ impl Plugin for DisplayCurrentTurnPlugin {
         )
         .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
         .add_system(display_current_turn_system)
-        .add_system(display_check_state_system);
+        .add_system(display_check_state_system)
+        .add_system(display_mate_state_system);
     }
 }
 
@@ -45,6 +46,8 @@ struct CurentTurnText;
 
 #[derive(Component)]
 struct CheckStateText;
+#[derive(Component)]
+struct MateStateText;
 
 fn set_up_display_turn_resource_system(mut commands: Commands, assets: Res<AssetServer>) {
     let move_image_holder = TurnImageHolder {
@@ -85,46 +88,62 @@ fn set_up_display_turn_components(
         })
         .insert(CurentTurnImage);
 
-    let current_move_text_bundle = Text2dBundle {
-        text: Text::from_section(
-            titles.turn.clone(),
-            TextStyle {
-                font: assets.load("fonts/FiraMono-Medium.ttf"),
-                font_size: 30.0,
-                color: Color::WHITE,
-            },
-        ),
-        transform: Transform {
-            translation: Vec3::new(text_x, text_y, 0.0),
-            scale: Vec3::splat(1.0),
-            ..default()
-        },
-        ..default()
-    };
-
     commands
-        .spawn_bundle(current_move_text_bundle)
+        .spawn_bundle(Text2dBundle {
+            text: Text::from_section(
+                titles.turn.clone(),
+                TextStyle {
+                    font: assets.load("fonts/FiraMono-Medium.ttf"),
+                    font_size: 30.0,
+                    color: Color::WHITE,
+                },
+            ),
+            transform: Transform {
+                translation: Vec3::new(text_x, text_y, 0.0),
+                scale: Vec3::splat(1.0),
+                ..default()
+            },
+            ..default()
+        })
         .insert(CurentTurnText);
 
-    let check_state_text_bundle = Text2dBundle {
-        text: Text::from_section(
-            titles.check.clone(),
-            TextStyle {
-                font: assets.load("fonts/FiraMono-Medium.ttf"),
-                font_size: 30.0,
-                color: Color::RED,
-            },
-        ),
-        transform: Transform {
-            translation: Vec3::new(text_x, text_y - 40., 0.0),
-            scale: Vec3::splat(1.0),
-            ..default()
-        },
-        ..default()
-    };
     commands
-        .spawn_bundle(check_state_text_bundle)
+        .spawn_bundle(Text2dBundle {
+            text: Text::from_section(
+                titles.check.clone(),
+                TextStyle {
+                    font: assets.load("fonts/FiraMono-Medium.ttf"),
+                    font_size: 30.0,
+                    color: Color::RED,
+                },
+            ),
+            transform: Transform {
+                translation: Vec3::new(text_x, text_y - 40., 0.0),
+                scale: Vec3::splat(1.0),
+                ..default()
+            },
+            ..default()
+        })
         .insert(CheckStateText);
+
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text::from_section(
+                titles.mate.clone(),
+                TextStyle {
+                    font: assets.load("fonts/FiraMono-Medium.ttf"),
+                    font_size: 30.0,
+                    color: Color::RED,
+                },
+            ),
+            transform: Transform {
+                translation: Vec3::new(text_x, text_y - 80., 0.0),
+                scale: Vec3::splat(1.0),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(MateStateText);
 }
 
 fn display_current_turn_system(
@@ -154,4 +173,12 @@ fn display_check_state_system(
 ) {
     let mut check_state_visibility = q_check_status.single_mut();
     check_state_visibility.is_visible = move_state.check_state.is_some();
+}
+
+fn display_mate_state_system(
+    mut q_mate_status: Query<&mut Visibility, With<MateStateText>>,
+    move_state: Res<MoveState>,
+) {
+    let mut mate_state_visibility = q_mate_status.single_mut();
+    mate_state_visibility.is_visible = move_state.mate_state.is_some();
 }

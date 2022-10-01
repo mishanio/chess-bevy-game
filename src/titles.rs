@@ -6,6 +6,7 @@ pub enum TitleLocale {
 pub struct Titles {
     pub title: String,
     pub check: String,
+    pub mate: String,
     pub turn: String,
 }
 
@@ -15,11 +16,13 @@ impl Titles {
             TitleLocale::EN => Titles {
                 title: "Chess Game".to_string(),
                 check: "Check".to_string(),
+                mate: "Mate".to_string(),
                 turn: "Turn".to_string(),
             },
             TitleLocale::RU => Titles {
                 title: "Шахматы".to_string(),
                 check: "Шах".to_string(),
+                mate: "Мат".to_string(),
                 turn: "Ход".to_string(),
             },
         }

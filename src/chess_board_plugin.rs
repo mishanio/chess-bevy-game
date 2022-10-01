@@ -227,7 +227,7 @@ fn set_cell_selected(
         if board.is_cell_matches(&cell.pos, &pointer) && available_cells.contains(&cell.pos) {
             let mut cloned_selected_piece = selected_piece.clone();
             let (maybe_removed_piece, pieces_after_move) =
-                ChessPiece::pieces_after_move(&pieces, &cell, &mut cloned_selected_piece);
+                ChessPiece::pieces_after_move(&pieces, &cell.pos, &mut cloned_selected_piece);
 
             let move_not_allowed =
                 ChessPiece::is_king_under_check(&selected_piece.color, &pieces_after_move, &board);
@@ -237,7 +237,11 @@ fn set_cell_selected(
 
             let color = selected_piece.color.opposite();
             if ChessPiece::is_king_under_check(&color, &pieces_after_move, &board) {
-                move_state.check_state = Option::Some(color);
+                if ChessPiece::is_king_under_mate(&color, &pieces_after_move, &board) {
+                    move_state.mate_state = Option::Some(color);
+                } else {
+                    move_state.check_state = Option::Some(color);
+                }
             } else {
                 move_state.check_state = None;
             }

@@ -9,8 +9,8 @@ pub struct MoveState {
     pub move_in_action: bool,
     pub current_collor: ChessColor,
     pub check_state: Option<ChessColor>,
-    pub is_mate_state: bool,
-    pub is_stalemate_state: bool,
+    pub mate_state: Option<ChessColor>,
+    pub is_stalemate_state: Option<ChessColor>,
 }
 
 impl MoveState {
