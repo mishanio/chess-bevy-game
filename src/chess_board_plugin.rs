@@ -238,12 +238,16 @@ fn set_cell_selected(
             let color = selected_piece.color.opposite();
             if ChessPiece::is_king_under_check(&color, &pieces_after_move, &board) {
                 if ChessPiece::is_king_under_mate(&color, &pieces_after_move, &board) {
+                    warn!("king mate state");
                     move_state.mate_state = Option::Some(color);
+                    move_state.check_state = None;
                 } else {
                     move_state.check_state = Option::Some(color);
+                    move_state.mate_state = None;
                 }
             } else {
                 move_state.check_state = None;
+                move_state.mate_state = None;
             }
 
             if let Some(piece_to_remove) = maybe_removed_piece {

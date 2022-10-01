@@ -22,7 +22,7 @@ struct DiagonalCellIter {
     y_direction: i8,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub struct ChessPiece {
     pub pos: CellPosition,
     pub color: ChessColor,
@@ -315,23 +315,28 @@ impl ChessPiece {
         return ChessPiece::is_cell_on_enemy_path(color, &king_position, pieces, board);
     }
 
-    //TODO
     pub fn is_king_under_mate(
         color: &ChessColor,
         pieces: &Vec<&ChessPiece>,
         board: &Board,
     ) -> bool {
-        let ally_pieces = pieces.iter().find(|piece| piece.color.eq(color));
+        let ally_pieces: Vec<&ChessPiece> = pieces
+            .iter()
+            .filter(|piece| piece.color.eq(color))
+            .map(|cp| *cp)
+            .collect();
+        warn!("check ally_pieces {:?}", ally_pieces);
         for ally_piece in ally_pieces {
+            warn!("check ally_piece {:?}", ally_piece);
             for cell_position in ally_piece.get_available_cells_for_move(board, pieces) {
-                let p = *ally_piece;
-                let mut cloned_selected_piece = p.clone();
+                let mut cloned_selected_piece = ally_piece.clone();
                 let (_, pieces_after_move) = ChessPiece::pieces_after_move(
                     pieces,
                     &cell_position,
                     &mut cloned_selected_piece,
                 );
-                if ChessPiece::is_king_under_check(color, &pieces_after_move, board) {
+
+                if !ChessPiece::is_king_under_check(color, &pieces_after_move, board) {
                     return false;
                 }
             }
@@ -458,5 +463,35 @@ impl Iterator for DiagonalCellIter {
         }
         self.pos = next;
         return Some(self.pos);
+    }
+}
+
+#[cfg(test)]
+mod run_tests {
+
+    use super::*;
+
+    #[test]
+    fn test_chess_piece_king_mate_true() {
+        let rook1 = ChessPiece::new(0, 7, ChessColor::WHITE, PieceType::ROOK);
+        let rook2 = ChessPiece::new(0, 6, ChessColor::WHITE, PieceType::ROOK);
+        let king = ChessPiece::new(5, 7, ChessColor::BLACK, PieceType::KING);
+
+        let pieces = vec![&rook1, &rook2, &king];
+        let board = Board::new(-200., -200., 128., 0.5);
+        let is_mate = ChessPiece::is_king_under_mate(&ChessColor::BLACK, &pieces, &board);
+        assert_eq!(true, is_mate);
+    }
+
+    #[test]
+    fn test_chess_piece_king_mate_false() {
+        let rook1 = ChessPiece::new(0, 7, ChessColor::WHITE, PieceType::ROOK);
+        let rook2 = ChessPiece::new(0, 6, ChessColor::WHITE, PieceType::ROOK);
+        let king = ChessPiece::new(5, 6, ChessColor::BLACK, PieceType::KING);
+
+        let pieces = vec![&rook1, &rook2, &king];
+        let board = Board::new(-200., -200., 128., 0.5);
+        let is_mate = ChessPiece::is_king_under_mate(&ChessColor::BLACK, &pieces, &board);
+        assert_eq!(false, is_mate);
     }
 }
