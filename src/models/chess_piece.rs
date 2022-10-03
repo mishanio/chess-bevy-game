@@ -325,9 +325,9 @@ impl ChessPiece {
             .filter(|piece| piece.color.eq(color))
             .map(|cp| *cp)
             .collect();
-        warn!("check ally_pieces {:?}", ally_pieces);
+        debug!("check ally_pieces {:?}", ally_pieces);
         for ally_piece in ally_pieces {
-            warn!("check ally_piece {:?}", ally_piece);
+            debug!("check ally_piece {:?}", ally_piece);
             for cell_position in ally_piece.get_available_cells_for_move(board, pieces) {
                 let mut cloned_selected_piece = ally_piece.clone();
                 let (_, pieces_after_move) = ChessPiece::pieces_after_move(
