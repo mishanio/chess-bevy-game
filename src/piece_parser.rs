@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
-use crate::models::{common_chess::ChessColor, chess_piece::{PieceType, ChessPiece}};
-
+use crate::models::{
+    chess_piece::{ChessPiece, PieceType},
+    common_chess::ChessColor,
+};
 
 pub struct PieceParser;
 
@@ -32,6 +34,19 @@ impl PieceParser {
                             |none|none|none|none|none|none|none|none|\n
                             |w_pa|w_pa|w_pa|w_pa|w_pa|w_pa|w_pa|w_pa|\n
                             |w_ro|w_kn|w_bi|w_ki|w_qu|w_bi|w_kn|w_ro|\n
+                            ";
+        return string.to_string();
+    }
+
+    pub fn test_map() -> String {
+        let string = "|b_ro|b_kn|b_bi|b_ki|b_qu|none|none|none|\n
+                            |none|none|none|none|none|none|none|none|\n
+                            |none|none|none|none|none|none|none|none|\n
+                            |none|none|none|none|none|none|none|none|\n
+                            |none|none|none|none|none|none|none|none|\n
+                            |none|none|none|none|none|none|none|none|\n
+                            |none|none|none|none|none|none|none|none|\n
+                            |w_ro|w_kn|w_bi|w_ki|w_qu|none|none|none|\n
                             ";
         return string.to_string();
     }

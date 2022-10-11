@@ -8,6 +8,7 @@ pub struct Titles {
     pub check: String,
     pub mate: String,
     pub turn: String,
+    pub button_new_game: String,
 }
 
 impl Titles {
@@ -18,12 +19,14 @@ impl Titles {
                 check: "Check".to_string(),
                 mate: "Mate".to_string(),
                 turn: "Turn".to_string(),
+                button_new_game: "New Game".to_string(),
             },
             TitleLocale::RU => Titles {
                 title: "Шахматы".to_string(),
                 check: "Шах".to_string(),
                 mate: "Мат".to_string(),
                 turn: "Ход".to_string(),
+                button_new_game: "Новая игра".to_string(),
             },
         }
     }

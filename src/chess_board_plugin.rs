@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use crate::{
     assets_helper::AssetsHelper,
     models::{
+        app_state::AppState,
         chess_cell::{ChessCell, ChessCellState},
         chess_move_state::MoveState,
         chess_piece::{ChessPiece, PieceType},
@@ -12,6 +13,7 @@ use crate::{
         common_resources::{Board, BoardPointer},
         removed_chess_piece::ChessPieceRemovedEvent,
     },
+    piece_parser::PieceParser,
     // piece_parser::PieceParser,
 };
 
@@ -20,16 +22,24 @@ pub struct ChessBoardPlugin;
 impl Plugin for ChessBoardPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
-            .add_startup_system_to_stage(StartupStage::Startup, set_up_chess_board)
-            .add_startup_system_to_stage(StartupStage::Startup, set_up_chess_pieces_system)
+            // .add_startup_system_to_stage(StartupStage::Startup, set_up_chess_board)
+            // .add_startup_system_to_stage(StartupStage::Startup, set_up_chess_pieces_system)
             .add_event::<ChessPieceRemovedEvent>()
-            .add_system(highlight_chess_piece_system)
-            .add_system(calculate_chess_cell_state_system)
-            .add_system(draw_highlight_chess_cell_system)
-            .add_system(set_piece_selected)
-            .add_system(set_cell_selected)
-            .add_system(remove_taken_piece_system)
-            .add_system(move_piece_system);
+            .add_system_set(
+                SystemSet::on_enter(AppState::Game)
+                    .with_system(set_up_chess_board)
+                    .with_system(set_up_chess_pieces_system),
+            )
+            .add_system_set(
+                SystemSet::on_update(AppState::Game)
+                    .with_system(highlight_chess_piece_system)
+                    .with_system(calculate_chess_cell_state_system)
+                    .with_system(draw_highlight_chess_cell_system)
+                    .with_system(set_piece_selected)
+                    .with_system(set_cell_selected)
+                    .with_system(remove_taken_piece_system)
+                    .with_system(move_piece_system),
+            );
     }
 }
 
@@ -47,33 +57,13 @@ fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: R
 }
 
 fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
-    let w_rook = ChessPiece::new(0, 0, ChessColor::WHITE, PieceType::ROOK);
-    let w_knight = ChessPiece::new(1, 0, ChessColor::WHITE, PieceType::KNIGHT);
-    let w_bishop = ChessPiece::new(2, 0, ChessColor::WHITE, PieceType::BISHOP);
-    let w_king = ChessPiece::new(3, 0, ChessColor::WHITE, PieceType::KING);
-    let w_queen = ChessPiece::new(4, 0, ChessColor::WHITE, PieceType::QUEEN);
-    AssetsHelper::spawn_piece(w_bishop, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_knight, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_rook, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_king, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(w_queen, commands.borrow_mut(), &assets, &board);
-
-    let b_rook = ChessPiece::new(0, 7, ChessColor::BLACK, PieceType::ROOK);
-    let b_knight = ChessPiece::new(1, 7, ChessColor::BLACK, PieceType::KNIGHT);
-    let b_bishop = ChessPiece::new(2, 7, ChessColor::BLACK, PieceType::BISHOP);
-    let b_king = ChessPiece::new(3, 7, ChessColor::BLACK, PieceType::KING);
-    let b_queen = ChessPiece::new(4, 7, ChessColor::BLACK, PieceType::QUEEN);
-    AssetsHelper::spawn_piece(b_rook, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_knight, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_bishop, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_king, commands.borrow_mut(), &assets, &board);
-    AssetsHelper::spawn_piece(b_queen, commands.borrow_mut(), &assets, &board);
-
-    // for element in PieceParser::parse_map(PieceParser::default_map()) {
-    //     if let Some(piece) = element {
-    //         AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
-    //     }
-    // }
+    let map = PieceParser::default_map();
+    let map = PieceParser::test_map();
+    for element in PieceParser::parse_map(map) {
+        if let Some(piece) = element {
+            AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
+        }
+    }
 }
 
 fn highlight_chess_piece_system(

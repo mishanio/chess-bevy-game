@@ -4,8 +4,12 @@ use chess_board_plugin::ChessBoardPlugin;
 use cursor_cords_plugin::CursorCordsPlugin;
 use custom_cursor_plugin::CustomCursorPlugin;
 use display_current_turn_plugin::DisplayCurrentTurnPlugin;
-use models::common_resources::{Board, BoardPointer, MainCamera};
+use models::{
+    app_state::AppState,
+    common_resources::{Board, BoardPointer, MainCamera},
+};
 use titles::{TitleLocale, Titles};
+use ui_menu_plugin::UiMenuPlugin;
 
 use crate::discard_tray_plugin::DiscardTrayPlugin;
 
@@ -18,11 +22,12 @@ mod display_current_turn_plugin;
 mod models;
 mod piece_parser;
 mod titles;
+mod ui_menu_plugin;
 
 fn main() {
     let titles = Titles::new(TitleLocale::RU);
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
+        // .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
         .insert_resource(WindowDescriptor {
             title: titles.title.clone(),
             // width: 1920.,
@@ -32,12 +37,14 @@ fn main() {
         })
         .insert_resource(titles)
         .add_plugins(DefaultPlugins)
+        .add_state(AppState::Game)
         .add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
         .add_plugin(ChessBoardPlugin)
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
         .add_plugin(DiscardTrayPlugin)
         .add_plugin(DisplayCurrentTurnPlugin)
+        .add_plugin(UiMenuPlugin)
         .run();
 }
 

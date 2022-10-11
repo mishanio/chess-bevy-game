@@ -1,12 +1,12 @@
-use std::collections::HashMap;
 use bevy::prelude::*;
+use std::collections::HashMap;
 // use bevy::utils::HashMap;
 
+use crate::assets_helper::AssetsHelper;
+use crate::models::app_state::AppState;
 use crate::models::common_chess::ChessColor;
 use crate::models::removed_chess_piece::{ChessPieceRemovedEvent, RemovedChessPiece};
 use crate::{App, Board, Plugin};
-use crate::assets_helper::AssetsHelper;
-
 
 #[derive(Default)]
 struct DiscardTrayHolder {
@@ -17,15 +17,19 @@ pub struct DiscardTrayPlugin;
 
 impl Plugin for DiscardTrayPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
-            .add_system(add_taken_piece_to_discard_tray);
+        // app.add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
+        //     .add_system(add_taken_piece_to_discard_tray);
+
+        app.add_system_set(SystemSet::on_enter(AppState::Game).with_system(set_up_resources))
+            .add_system_set(
+                SystemSet::on_update(AppState::Game).with_system(add_taken_piece_to_discard_tray),
+            );
     }
 }
 
 fn set_up_resources(mut commands: Commands) {
     commands.insert_resource(DiscardTrayHolder::default())
 }
-
 
 fn add_taken_piece_to_discard_tray(
     mut commands: Commands,
@@ -41,10 +45,11 @@ fn add_taken_piece_to_discard_tray(
         let removed_piece = RemovedChessPiece {
             color: chess_piece.color.clone(),
             piece_type: chess_piece.piece_type.clone(),
-            num: element_num
+            num: element_num,
         };
         AssetsHelper::spawn_removed_piece(removed_piece, &mut commands, &assets, &board);
-        discard_tray.value.insert(chess_piece.color.clone(), element_num + 1);
-
+        discard_tray
+            .value
+            .insert(chess_piece.color.clone(), element_num + 1);
     });
 }

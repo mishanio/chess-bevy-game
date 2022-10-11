@@ -2,7 +2,7 @@ use bevy::{prelude::*, utils::HashSet};
 
 use crate::models::common_resources::{Board, CellPosition};
 
-use super::{chess_cell::ChessCell, common_chess::ChessColor};
+use super::common_chess::ChessColor;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum PieceType {

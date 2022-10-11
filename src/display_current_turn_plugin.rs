@@ -3,8 +3,8 @@ use bevy::{prelude::*, text::Text2dSize};
 use crate::{
     assets_helper::AssetsHelper,
     models::{
-        chess_move_state::MoveState, chess_piece::PieceType, common_chess::ChessColor,
-        common_resources::Board,
+        app_state::AppState, chess_move_state::MoveState, chess_piece::PieceType,
+        common_chess::ChessColor, common_resources::Board,
     },
     titles::Titles,
 };
@@ -17,10 +17,16 @@ impl Plugin for DisplayCurrentTurnPlugin {
             StartupStage::PreStartup,
             set_up_display_turn_resource_system,
         )
-        .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
-        .add_system(display_current_turn_system)
-        .add_system(display_check_state_system)
-        .add_system(display_mate_state_system);
+        // .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
+        .add_system_set(
+            SystemSet::on_enter(AppState::Game).with_system(set_up_display_turn_components),
+        )
+        .add_system_set(
+            SystemSet::on_update(AppState::Game)
+                .with_system(display_current_turn_system)
+                .with_system(display_check_state_system)
+                .with_system(display_mate_state_system),
+        );
     }
 }
 
