@@ -9,27 +9,6 @@ use crate::{
     titles::Titles,
 };
 
-pub struct DisplayCurrentTurnPlugin;
-
-impl Plugin for DisplayCurrentTurnPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(
-            StartupStage::PreStartup,
-            set_up_display_turn_resource_system,
-        )
-        // .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
-        .add_system_set(
-            SystemSet::on_enter(AppState::Game).with_system(set_up_display_turn_components),
-        )
-        .add_system_set(
-            SystemSet::on_update(AppState::Game)
-                .with_system(display_current_turn_system)
-                .with_system(display_check_state_system)
-                .with_system(display_mate_state_system),
-        );
-    }
-}
-
 struct TurnImageHolder {
     white_turn_img: Handle<Image>,
     black_turn_img: Handle<Image>,
@@ -54,6 +33,33 @@ struct CurentTurnText;
 struct CheckStateText;
 #[derive(Component)]
 struct MateStateText;
+
+#[derive(Component)]
+struct Despawnable;
+
+pub struct DisplayCurrentTurnPlugin;
+
+impl Plugin for DisplayCurrentTurnPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system_to_stage(
+            StartupStage::PreStartup,
+            set_up_display_turn_resource_system,
+        )
+        // .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
+        .add_system_set(
+            SystemSet::on_enter(AppState::Game).with_system(set_up_display_turn_components),
+        )
+        .add_system_set(
+            SystemSet::on_update(AppState::Game)
+                .with_system(display_current_turn_system)
+                .with_system(display_check_state_system)
+                .with_system(display_mate_state_system),
+        )
+        .add_system_set(
+            SystemSet::on_exit(AppState::Game).with_system(despawn_display_turn_components),
+        );
+    }
+}
 
 fn set_up_display_turn_resource_system(mut commands: Commands, assets: Res<AssetServer>) {
     let move_image_holder = TurnImageHolder {
@@ -92,7 +98,8 @@ fn set_up_display_turn_components(
             },
             ..default()
         })
-        .insert(CurentTurnImage);
+        .insert(CurentTurnImage)
+        .insert(Despawnable);
 
     commands
         .spawn_bundle(Text2dBundle {
@@ -111,7 +118,8 @@ fn set_up_display_turn_components(
             },
             ..default()
         })
-        .insert(CurentTurnText);
+        .insert(CurentTurnText)
+        .insert(Despawnable);
 
     commands
         .spawn_bundle(Text2dBundle {
@@ -130,7 +138,8 @@ fn set_up_display_turn_components(
             },
             ..default()
         })
-        .insert(CheckStateText);
+        .insert(CheckStateText)
+        .insert(Despawnable);
 
     commands
         .spawn_bundle(Text2dBundle {
@@ -149,7 +158,17 @@ fn set_up_display_turn_components(
             },
             ..default()
         })
-        .insert(MateStateText);
+        .insert(MateStateText)
+        .insert(Despawnable);
+}
+
+fn despawn_display_turn_components(
+    mut commands: Commands,
+    q_despawn: Query<Entity, With<Despawnable>>,
+) {
+    for entity in q_despawn.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
 }
 
 fn display_current_turn_system(

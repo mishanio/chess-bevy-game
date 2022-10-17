@@ -8,8 +8,7 @@ use crate::{
         app_state::AppState,
         chess_cell::{ChessCell, ChessCellState},
         chess_move_state::MoveState,
-        chess_piece::{ChessPiece, PieceType},
-        common_chess::ChessColor,
+        chess_piece::ChessPiece,
         common_resources::{Board, BoardPointer},
         removed_chess_piece::ChessPieceRemovedEvent,
     },
@@ -27,7 +26,7 @@ impl Plugin for ChessBoardPlugin {
             .add_event::<ChessPieceRemovedEvent>()
             .add_system_set(
                 SystemSet::on_enter(AppState::Game)
-                    .with_system(set_up_chess_board)
+                    .with_system(set_up_chess_board_system)
                     .with_system(set_up_chess_pieces_system),
             )
             .add_system_set(
@@ -39,6 +38,11 @@ impl Plugin for ChessBoardPlugin {
                     .with_system(set_cell_selected)
                     .with_system(remove_taken_piece_system)
                     .with_system(move_piece_system),
+            )
+            .add_system_set(
+                SystemSet::on_exit(AppState::Game)
+                    .with_system(despawn_chess_board)
+                    .with_system(despawn_chess_pieces),
             );
     }
 }
@@ -47,7 +51,7 @@ fn set_up_resources(mut commands: Commands) {
     commands.insert_resource(MoveState::default());
 }
 
-fn set_up_chess_board(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
+fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
     for j in board.cell_range() {
         for i in board.cell_range() {
             let cell = ChessCell::from(i, j);
@@ -63,6 +67,18 @@ fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, 
         if let Some(piece) = element {
             AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
         }
+    }
+}
+
+fn despawn_chess_board(mut commands: Commands, q_despawn: Query<Entity, With<ChessCell>>) {
+    for entity in q_despawn.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
+fn despawn_chess_pieces(mut commands: Commands, q_despawn: Query<Entity, With<ChessPiece>>) {
+    for entity in q_despawn.iter() {
+        commands.entity(entity).despawn();
     }
 }
 

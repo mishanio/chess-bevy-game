@@ -1,10 +1,10 @@
-use bevy::prelude::*;
-use crate::Board;
 use crate::models::chess_cell::ChessCell;
 use crate::models::chess_piece::{ChessPiece, PieceType};
 use crate::models::common_chess::ChessColor;
 use crate::models::common_resources::DiscardArea;
 use crate::models::removed_chess_piece::RemovedChessPiece;
+use crate::Board;
+use bevy::prelude::*;
 
 pub struct AssetsHelper;
 
@@ -15,7 +15,8 @@ impl AssetsHelper {
         assets: &AssetServer,
         board: &Board,
     ) {
-        let image = AssetsHelper::load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
+        let image =
+            AssetsHelper::load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
         let (x, y) = board.coordinates(&chess_piece.pos);
         commands
             .spawn_bundle(SpriteBundle {
@@ -36,7 +37,8 @@ impl AssetsHelper {
         assets: &AssetServer,
         board: &Board,
     ) {
-        let image = AssetsHelper::load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
+        let image =
+            AssetsHelper::load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
         let discard_area = match chess_piece.color {
             ChessColor::WHITE => DiscardArea::TOP,
             ChessColor::BLACK => DiscardArea::BOTTOM,
@@ -55,7 +57,12 @@ impl AssetsHelper {
             .insert(chess_piece);
     }
 
-    pub fn spawn_chess_cell(cell: ChessCell, commands: &mut Commands, board: &Board, assets: &AssetServer) {
+    pub fn spawn_chess_cell(
+        cell: ChessCell,
+        commands: &mut Commands,
+        board: &Board,
+        assets: &AssetServer,
+    ) {
         let (x, y) = board.coordinates(&cell.pos);
         let cell_image = AssetsHelper::load_cell_image(&cell.color(), assets);
         commands
@@ -70,7 +77,6 @@ impl AssetsHelper {
             })
             .insert(cell);
     }
-
 
     pub fn load_piece_image(
         color: &ChessColor,
@@ -98,8 +104,6 @@ impl AssetsHelper {
         return assets.load(&path);
     }
 
-
-
     fn load_cell_image(color: &ChessColor, assets: &AssetServer) -> Handle<Image> {
         let sprite_name = match color {
             ChessColor::WHITE => "square brown light_png_shadow_128px.png",
@@ -109,10 +113,10 @@ impl AssetsHelper {
         return assets.load(&format!("shadowed/128px/{}", sprite_name));
     }
 
-// fn load_hightlight_cell_image(assets: &AssetServer) -> Handle<Image> {
-//     return assets.load("shadowed/128px/square gray light _png_shadow_128px.png");
-// }
-// fn load_selected_cell_image(assets: &AssetServer) -> Handle<Image> {
-//     return assets.load("shadowed/128px/square gray dark _png_shadow_128px.png");
-// }
+    // fn load_hightlight_cell_image(assets: &AssetServer) -> Handle<Image> {
+    //     return assets.load("shadowed/128px/square gray light _png_shadow_128px.png");
+    // }
+    // fn load_selected_cell_image(assets: &AssetServer) -> Handle<Image> {
+    //     return assets.load("shadowed/128px/square gray dark _png_shadow_128px.png");
+    // }
 }

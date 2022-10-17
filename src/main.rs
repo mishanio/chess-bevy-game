@@ -27,7 +27,7 @@ mod ui_menu_plugin;
 fn main() {
     let titles = Titles::new(TitleLocale::RU);
     App::new()
-        // .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
+        .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
         .insert_resource(WindowDescriptor {
             title: titles.title.clone(),
             // width: 1920.,
@@ -37,7 +37,7 @@ fn main() {
         })
         .insert_resource(titles)
         .add_plugins(DefaultPlugins)
-        .add_state(AppState::Game)
+        .add_state(AppState::MainMenu)
         .add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
         .add_plugin(ChessBoardPlugin)
         .add_plugin(CursorCordsPlugin)
@@ -45,6 +45,7 @@ fn main() {
         .add_plugin(DiscardTrayPlugin)
         .add_plugin(DisplayCurrentTurnPlugin)
         .add_plugin(UiMenuPlugin)
+        .add_system(change_game_state)
         .run();
 }
 
@@ -55,4 +56,15 @@ fn set_up_resources(mut commands: Commands) {
     commands
         .spawn_bundle(Camera2dBundle::default())
         .insert(MainCamera);
+}
+
+fn change_game_state(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
+    if !keys.just_pressed(KeyCode::Escape) {
+        return;
+    }
+    match app_state.current() {
+        AppState::MainMenu => app_state.set(AppState::Game).unwrap(),
+        AppState::Game => app_state.set(AppState::MainMenu).unwrap(),
+    };
+    keys.reset(KeyCode::Escape);
 }
