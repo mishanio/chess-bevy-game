@@ -38,14 +38,6 @@ impl ChessPiece {
         }
     }
 
-    pub fn clone_with_new_position(&self, pos: &CellPosition) -> ChessPiece {
-        ChessPiece {
-            pos: pos.clone(),
-            color: self.color.clone(),
-            piece_type: self.piece_type.clone(),
-        }
-    }
-
     pub fn get_available_cells_for_move(
         &self,
         board: &Board,

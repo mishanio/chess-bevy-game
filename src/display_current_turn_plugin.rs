@@ -79,8 +79,6 @@ fn set_up_display_turn_resource_system(mut commands: Commands, assets: Res<Asset
 
 fn set_up_display_turn_components(
     mut commands: Commands,
-    turn_image_holder: Res<TurnImageHolder>,
-    move_state: Res<MoveState>,
     assets: Res<AssetServer>,
     board: Res<Board>,
     titles: Res<Titles>,
@@ -90,9 +88,7 @@ fn set_up_display_turn_components(
 
     commands
         .spawn_bundle(SpriteBundle {
-            texture: turn_image_holder.get_image(&move_state.current_collor),
             transform: Transform {
-                translation: Vec3::new(0., text_y, 1.0),
                 scale: Vec3::splat(board.discard_image_scale()),
                 ..default()
             },

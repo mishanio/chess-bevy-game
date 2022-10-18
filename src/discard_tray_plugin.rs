@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
-// use bevy::utils::HashMap;
 
 use crate::assets_helper::AssetsHelper;
 use crate::models::app_state::AppState;
@@ -17,18 +16,27 @@ pub struct DiscardTrayPlugin;
 
 impl Plugin for DiscardTrayPlugin {
     fn build(&self, app: &mut App) {
-        // app.add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
-        //     .add_system(add_taken_piece_to_discard_tray);
-
         app.add_system_set(SystemSet::on_enter(AppState::Game).with_system(set_up_resources))
             .add_system_set(
                 SystemSet::on_update(AppState::Game).with_system(add_taken_piece_to_discard_tray),
+            )
+            .add_system_set(
+                SystemSet::on_exit(AppState::Game).with_system(despawn_discard_tray_pieces),
             );
     }
 }
 
 fn set_up_resources(mut commands: Commands) {
     commands.insert_resource(DiscardTrayHolder::default())
+}
+
+fn despawn_discard_tray_pieces(
+    mut commands: Commands,
+    q_despawn: Query<Entity, With<RemovedChessPiece>>,
+) {
+    for entity in q_despawn.iter() {
+        commands.entity(entity).despawn();
+    }
 }
 
 fn add_taken_piece_to_discard_tray(

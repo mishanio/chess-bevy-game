@@ -2,12 +2,6 @@ use bevy::prelude::*;
 
 use super::common_chess::ChessColor;
 
-enum KingState {
-    NONE,
-    CHECK,
-    MATE,
-}
-
 #[derive(Default)]
 pub struct MoveState {
     pub selected_piece: Option<Entity>,

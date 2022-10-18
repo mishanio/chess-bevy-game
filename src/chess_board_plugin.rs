@@ -20,14 +20,12 @@ pub struct ChessBoardPlugin;
 
 impl Plugin for ChessBoardPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
-            // .add_startup_system_to_stage(StartupStage::Startup, set_up_chess_board)
-            // .add_startup_system_to_stage(StartupStage::Startup, set_up_chess_pieces_system)
-            .add_event::<ChessPieceRemovedEvent>()
+        app.add_event::<ChessPieceRemovedEvent>()
             .add_system_set(
                 SystemSet::on_enter(AppState::Game)
-                    .with_system(set_up_chess_board_system)
-                    .with_system(set_up_chess_pieces_system),
+                    .with_system(set_up_resources.label("setup_resource"))
+                    .with_system(set_up_chess_board_system.after("setup_resource"))
+                    .with_system(set_up_chess_pieces_system.after("setup_resource")),
             )
             .add_system_set(
                 SystemSet::on_update(AppState::Game)
@@ -61,7 +59,7 @@ fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, b
 }
 
 fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
-    let map = PieceParser::default_map();
+    // let map = PieceParser::default_map();
     let map = PieceParser::test_map();
     for element in PieceParser::parse_map(map) {
         if let Some(piece) = element {
