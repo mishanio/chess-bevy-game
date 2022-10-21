@@ -138,7 +138,10 @@ fn handle_button_clicked(
                     *game_state = GameState::NEW;
                     app_state.set(AppState::Game).unwrap()
                 }
-                MenuButton::Continue => app_state.set(AppState::Game).unwrap(),
+                MenuButton::Continue => {
+                    *game_state = GameState::CONTINUE;
+                    app_state.set(AppState::Game).unwrap()
+                }
                 MenuButton::Exit => exit.send(AppExit),
             }
         }

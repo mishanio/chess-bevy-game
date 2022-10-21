@@ -4,7 +4,7 @@ use bevy::prelude::Component;
 
 pub enum GameState {
     NEW,
-    EXIST,
+    CONTINUE,
 }
 
 pub enum DiscardArea {
