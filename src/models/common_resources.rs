@@ -2,6 +2,11 @@ use std::ops::Range;
 
 use bevy::prelude::Component;
 
+pub enum GameState {
+    NEW,
+    EXIST,
+}
+
 pub enum DiscardArea {
     TOP,
     BOTTOM,

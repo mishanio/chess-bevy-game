@@ -6,7 +6,7 @@ use custom_cursor_plugin::CustomCursorPlugin;
 use display_current_turn_plugin::DisplayCurrentTurnPlugin;
 use models::{
     app_state::AppState,
-    common_resources::{Board, BoardPointer, MainCamera},
+    common_resources::{Board, BoardPointer, GameState, MainCamera},
 };
 use titles::{TitleLocale, Titles};
 use ui_menu_plugin::UiMenuPlugin;
@@ -35,6 +35,7 @@ fn main() {
             mode: WindowMode::Windowed,
             ..Default::default()
         })
+        .insert_resource(GameState::NEW)
         .insert_resource(titles)
         .add_plugins(DefaultPlugins)
         .add_state(AppState::MainMenu)
