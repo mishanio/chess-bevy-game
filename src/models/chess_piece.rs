@@ -4,7 +4,7 @@ use crate::models::common_resources::{Board, CellPosition};
 
 use super::common_chess::ChessColor;
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Eq, Hash,)]
 pub enum PieceType {
     PAWN,
     BISHOP,

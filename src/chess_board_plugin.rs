@@ -9,18 +9,24 @@ use crate::{
         chess_cell::{ChessCell, ChessCellState},
         chess_move_state::MoveState,
         chess_piece::ChessPiece,
-        common_resources::{Board, BoardPointer},
+        common_resources::{Board, BoardPointer, GameState},
         removed_chess_piece::ChessPieceRemovedEvent,
     },
     piece_parser::PieceParser,
-    // piece_parser::PieceParser,
 };
+
+#[derive(Default)]
+struct PiecesState {
+    state: Option<String>,
+}
 
 pub struct ChessBoardPlugin;
 
 impl Plugin for ChessBoardPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ChessPieceRemovedEvent>()
+        app
+        .insert_resource(PiecesState::default())
+        .add_event::<ChessPieceRemovedEvent>()
             .add_system_set(
                 SystemSet::on_enter(AppState::Game)
                     .with_system(set_up_resources.label("setup_resource"))
@@ -58,10 +64,20 @@ fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, b
     }
 }
 
-fn set_up_chess_pieces_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
-    // let map = PieceParser::default_map();
-    let map = PieceParser::test_map();
-    for element in PieceParser::parse_map(map) {
+fn set_up_chess_pieces_system(assets: Res<AssetServer>, 
+    mut commands: Commands, 
+    board: Res<Board>,
+    game_state: Res<GameState>,
+    mut pieces_state: ResMut<PiecesState>,) {
+    match *game_state {
+        GameState::NEW => pieces_state.state = None,
+        GameState::CONTINUE => (),
+    } 
+
+
+    let map = pieces_state.state.take().unwrap_or(PieceParser::test_tile_map());
+
+    for element in PieceParser::parse_tile_map(map) {
         if let Some(piece) = element {
             AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
         }
@@ -74,8 +90,16 @@ fn despawn_chess_board(mut commands: Commands, q_despawn: Query<Entity, With<Che
     }
 }
 
-fn despawn_chess_pieces(mut commands: Commands, q_despawn: Query<Entity, With<ChessPiece>>) {
-    for entity in q_despawn.iter() {
+fn despawn_chess_pieces(mut commands: Commands, 
+    q_despawn: Query<(Entity, &ChessPiece)>,
+    board: Res<Board>,
+    mut pieces_state: ResMut<PiecesState>,) {
+    let pieces: Vec<&ChessPiece> = q_despawn.iter().map(|tup| tup.1).collect();
+    
+    let tile_map = PieceParser::save_tile_map(&pieces, &board);
+    warn!("tile_map {}", tile_map);
+    pieces_state.state = Some(tile_map);
+    for (entity, _) in q_despawn.iter() {
         commands.entity(entity).despawn();
     }
 }

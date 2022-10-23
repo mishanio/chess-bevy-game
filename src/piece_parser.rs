@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::models::{
     chess_piece::{ChessPiece, PieceType},
-    common_chess::ChessColor,
+    common_chess::ChessColor, common_resources::{Board, CellPosition},
 };
 
 pub struct PieceParser;
@@ -25,7 +25,24 @@ impl PieceParser {
         ]);
     }
 
-    pub fn default_map() -> String {
+    fn reverse_color_mappings<'a>() -> HashMap<ChessColor,  &'a str> {
+        return HashMap::from([
+            (ChessColor::BLACK, "b"),
+            (ChessColor::WHITE,"w"),
+        ]);
+    }
+    fn reverse_type_mappings<'a>() -> HashMap<PieceType, &'a str> {
+        return HashMap::from([
+            (PieceType::PAWN, "pa"),
+            (PieceType::ROOK, "ro"),
+            (PieceType::KNIGHT,"kn"),
+            (PieceType::BISHOP,"bi"),
+            (PieceType::KING,"ki"),
+            (PieceType::QUEEN,"qu"),
+        ]);
+    }
+
+    pub fn default_tile_map() -> String {
         let string = "|b_ro|b_kn|b_bi|b_ki|b_qu|b_bi|b_kn|b_ro|\n
                             |b_pa|b_pa|b_pa|b_pa|b_pa|b_pa|b_pa|b_pa|\n
                             |none|none|none|none|none|none|none|none|\n
@@ -38,7 +55,7 @@ impl PieceParser {
         return string.to_string();
     }
 
-    pub fn test_map() -> String {
+    pub fn test_tile_map() -> String {
         let string = "|b_ro|b_kn|b_bi|b_ki|b_qu|none|none|none|\n
                             |none|none|none|none|none|none|none|none|\n
                             |none|none|none|none|none|none|none|none|\n
@@ -51,7 +68,7 @@ impl PieceParser {
         return string.to_string();
     }
 
-    pub fn parse_map(map: String) -> Vec<Option<ChessPiece>> {
+    pub fn parse_tile_map(map: String) -> Vec<Option<ChessPiece>> {
         return map
             .split('\n')
             .filter(|l| !l.trim().is_empty())
@@ -75,6 +92,28 @@ impl PieceParser {
             ChessPiece::new(i as i8, j as i8, color.clone(), piece_type.clone())
         });
     }
+
+    pub fn save_tile_map(tiles: &Vec<&ChessPiece>, board: &Board) -> String {
+        let color_mappings = PieceParser::reverse_color_mappings();
+        let type_mappings = PieceParser::reverse_type_mappings();
+        let mut tile_map_builder = Vec::new();
+        for j in board.cell_range() {
+            let mut line_builder = String::new();
+            line_builder.push('|');
+            for i in board.cell_range() {
+               let symbol = match  tiles.iter().find(|cp| cp.pos.i == i && cp.pos.j ==j) {
+                    Some(piece) => format!("{}_{}", color_mappings.get(&piece.color).unwrap(), type_mappings.get(&piece.piece_type).unwrap()),
+                    None => "none".to_string(),
+                };
+                line_builder.push_str(symbol.as_str());
+                line_builder.push('|');
+            }
+            line_builder.push('\n');
+            tile_map_builder.push(line_builder)
+        }
+        let result: Vec<String> = tile_map_builder.iter().rev().map(|s| s.to_owned()).collect();
+        return result.join("");
+    }
 }
 
 #[cfg(test)]
@@ -85,7 +124,7 @@ mod run_tests {
 
     #[test]
     fn test_parse_map() {
-        let result = PieceParser::parse_map(PieceParser::default_map());
+        let result = PieceParser::parse_tile_map(PieceParser::default_tile_map());
         assert_eq!(64, result.len());
         for p in &result[0..16] {
             assert!(p.is_some())
@@ -96,6 +135,7 @@ mod run_tests {
         for p in &result[48..64] {
             assert!(p.is_some())
         }
+        
     }
     #[test]
     fn test_parse_piece() {
