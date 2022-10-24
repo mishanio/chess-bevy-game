@@ -16,17 +16,21 @@ use crate::{
 };
 
 #[derive(Default)]
-struct PiecesState {
+struct PiecesStore {
     state: Option<String>,
+}
+#[derive(Default)]
+struct MoveStateStore {
+    state: Option<MoveState>,
 }
 
 pub struct ChessBoardPlugin;
 
 impl Plugin for ChessBoardPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .insert_resource(PiecesState::default())
-        .add_event::<ChessPieceRemovedEvent>()
+        app.insert_resource(PiecesStore::default())
+            .insert_resource(MoveStateStore::default())
+            .add_event::<ChessPieceRemovedEvent>()
             .add_system_set(
                 SystemSet::on_enter(AppState::Game)
                     .with_system(set_up_resources.label("setup_resource"))
@@ -46,13 +50,26 @@ impl Plugin for ChessBoardPlugin {
             .add_system_set(
                 SystemSet::on_exit(AppState::Game)
                     .with_system(despawn_chess_board)
-                    .with_system(despawn_chess_pieces),
+                    .with_system(despawn_chess_pieces)
+                    .with_system(save_move_state),
             );
     }
 }
 
-fn set_up_resources(mut commands: Commands) {
-    commands.insert_resource(MoveState::default());
+fn set_up_resources(
+    mut commands: Commands,
+    game_state: Res<GameState>,
+    mut move_state_store: ResMut<MoveStateStore>,
+) {
+    if let GameState::NEW = *game_state {
+        move_state_store.state = None
+    }
+    let move_state = move_state_store
+        .state
+        .take()
+        .unwrap_or(MoveState::default());
+
+    commands.insert_resource(move_state);
 }
 
 fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, board: Res<Board>) {
@@ -64,18 +81,21 @@ fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, b
     }
 }
 
-fn set_up_chess_pieces_system(assets: Res<AssetServer>, 
-    mut commands: Commands, 
+fn set_up_chess_pieces_system(
+    assets: Res<AssetServer>,
+    mut commands: Commands,
     board: Res<Board>,
     game_state: Res<GameState>,
-    mut pieces_state: ResMut<PiecesState>,) {
-    match *game_state {
-        GameState::NEW => pieces_state.state = None,
-        GameState::CONTINUE => (),
-    } 
+    mut pieces_store: ResMut<PiecesStore>,
+) {
+    if let GameState::NEW = *game_state {
+        pieces_store.state = None
+    }
 
-
-    let map = pieces_state.state.take().unwrap_or(PieceParser::test_tile_map());
+    let map = pieces_store
+        .state
+        .take()
+        .unwrap_or(PieceParser::test_tile_map());
 
     for element in PieceParser::parse_tile_map(map) {
         if let Some(piece) = element {
@@ -90,18 +110,24 @@ fn despawn_chess_board(mut commands: Commands, q_despawn: Query<Entity, With<Che
     }
 }
 
-fn despawn_chess_pieces(mut commands: Commands, 
+fn despawn_chess_pieces(
+    mut commands: Commands,
     q_despawn: Query<(Entity, &ChessPiece)>,
     board: Res<Board>,
-    mut pieces_state: ResMut<PiecesState>,) {
+    mut pieces_store: ResMut<PiecesStore>,
+) {
     let pieces: Vec<&ChessPiece> = q_despawn.iter().map(|tup| tup.1).collect();
-    
+
     let tile_map = PieceParser::save_tile_map(&pieces, &board);
-    warn!("tile_map {}", tile_map);
-    pieces_state.state = Some(tile_map);
+    warn!("tile_map:\n{}", tile_map);
+    pieces_store.state = Some(tile_map);
     for (entity, _) in q_despawn.iter() {
         commands.entity(entity).despawn();
     }
+}
+
+fn save_move_state(move_state: Res<MoveState>, mut move_state_store: ResMut<MoveStateStore>) {
+    move_state_store.state = Some(move_state.clone())
 }
 
 fn highlight_chess_piece_system(

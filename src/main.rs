@@ -63,9 +63,13 @@ fn change_game_state(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<Sta
     if !keys.just_pressed(KeyCode::Escape) {
         return;
     }
-    match app_state.current() {
-        AppState::MainMenu => app_state.set(AppState::Game).unwrap(),
-        AppState::Game => app_state.set(AppState::MainMenu).unwrap(),
-    };
+    // match app_state.current() {
+    //     AppState::MainMenu => app_state.set(AppState::Game).unwrap(),
+    //     AppState::Game => app_state.set(AppState::MainMenu).unwrap(),
+    // };
+
+    if let AppState::Game = app_state.current() {
+        app_state.set(AppState::MainMenu).unwrap();
+    }
     keys.reset(KeyCode::Escape);
 }
