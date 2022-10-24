@@ -1,5 +1,5 @@
 # chess-bevy-game
-chess game using bevy
+chess game using [bevy](https://github.com/bevyengine/bevy)
 
 Run command
 RUST_LOG="warn,chess-bevy-game=debug" cargo run --features bevy/dynamic
