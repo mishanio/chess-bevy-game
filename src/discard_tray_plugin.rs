@@ -3,20 +3,28 @@ use std::collections::HashMap;
 
 use crate::assets_helper::AssetsHelper;
 use crate::models::app_state::AppState;
+use crate::models::chess_piece::PieceType;
 use crate::models::common_chess::ChessColor;
-use crate::models::removed_chess_piece::{ChessPieceRemovedEvent, RemovedChessPiece};
+use crate::models::common_resources::GameState;
+use crate::models::removed_chess_piece::{ChessPieceRemovedEvent, RemovedChessPiece, self};
 use crate::{App, Board, Plugin};
 
 #[derive(Default)]
 struct DiscardTrayHolder {
     value: HashMap<ChessColor, i8>,
 }
+#[derive(Default)]
+struct DiscardPiecesStore {
+    state: Vec<(ChessColor, PieceType)>,
+}
 
 pub struct DiscardTrayPlugin;
 
 impl Plugin for DiscardTrayPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::Game).with_system(set_up_resources))
+        app.insert_resource(DiscardTrayHolder::default())
+            .insert_resource(DiscardPiecesStore::default())
+            .add_system_set(SystemSet::on_enter(AppState::Game).with_system(set_up_resources))
             .add_system_set(
                 SystemSet::on_update(AppState::Game).with_system(add_taken_piece_to_discard_tray),
             )
@@ -26,15 +34,34 @@ impl Plugin for DiscardTrayPlugin {
     }
 }
 
-fn set_up_resources(mut commands: Commands) {
-    commands.insert_resource(DiscardTrayHolder::default())
+fn set_up_resources(
+    mut commands: Commands,
+    game_state: Res<GameState>,
+    mut discard_tray_holder: ResMut<DiscardTrayHolder>,
+    mut pieces_store: ResMut<DiscardPiecesStore>,
+    board: Res<Board>,
+    assets: Res<AssetServer>,
+) {
+    if let GameState::NEW = *game_state {
+        pieces_store.state = vec![];
+    }
+    for (color, piece_type) in pieces_store.state.iter() {
+        add_to_dicard(color, piece_type, &mut discard_tray_holder, &mut commands, &assets, &board);
+    }
+
+
 }
 
 fn despawn_discard_tray_pieces(
     mut commands: Commands,
-    q_despawn: Query<Entity, With<RemovedChessPiece>>,
+    q_despawn: Query<(Entity, &RemovedChessPiece)>,
+    mut pieces_store: ResMut<DiscardPiecesStore>,
+    mut discard_tray_holder: ResMut<DiscardTrayHolder>,
 ) {
-    for entity in q_despawn.iter() {
+    pieces_store.state = vec![];
+    discard_tray_holder.value = HashMap::new();
+    for (entity, chess_piece) in q_despawn.iter() {
+        pieces_store.state.push((chess_piece.color.clone(), chess_piece.piece_type.clone()));
         commands.entity(entity).despawn();
     }
 }
@@ -48,16 +75,34 @@ fn add_taken_piece_to_discard_tray(
 ) {
     piece_taken_event_reader.iter().for_each(|event| {
         let chess_piece = &event.chess_piece;
-        let element_num = discard_tray.value.get(&chess_piece.color).map_or(0, |v| *v);
+        let piece_type = chess_piece.piece_type.clone();
+        let color = chess_piece.color.clone();
 
-        let removed_piece = RemovedChessPiece {
-            color: chess_piece.color.clone(),
-            piece_type: chess_piece.piece_type.clone(),
-            num: element_num,
-        };
-        AssetsHelper::spawn_removed_piece(removed_piece, &mut commands, &assets, &board);
-        discard_tray
-            .value
-            .insert(chess_piece.color.clone(), element_num + 1);
+        add_to_dicard(
+            &color,
+            &piece_type,
+            &mut discard_tray,
+            &mut commands,
+            &assets,
+            &board,
+        );
     });
+}
+
+fn add_to_dicard(
+    color: &ChessColor,
+    piece_type: &PieceType,
+    discard_tray: &mut DiscardTrayHolder,
+    commands: &mut Commands,
+    assets: &AssetServer,
+    board: &Board,
+) {
+    let element_num = discard_tray.value.get(&color).map_or(0, |v| *v);
+    let removed_piece = RemovedChessPiece {
+        color: color.clone(),
+        piece_type: piece_type.clone(),
+        num: element_num,
+    };
+    AssetsHelper::spawn_removed_piece(removed_piece, commands, &assets, &board);
+    discard_tray.value.insert(color.clone(), element_num + 1);
 }
