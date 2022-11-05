@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::models::{
     chess_piece::{ChessPiece, PieceType},
-    common_chess::ChessColor, common_resources::{Board, CellPosition},
+    common_chess::ChessColor, common_resources::{Board},
 };
 
 pub struct PieceParser;

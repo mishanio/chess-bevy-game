@@ -1,12 +1,17 @@
 use std::ops::Range;
 
-use bevy::prelude::Component;
+use bevy::{prelude::{Component, Handle}, text::Font};
 
 pub enum GameState {
     NEW,
     CONTINUE,
 }
 
+pub struct FontHolder {
+    pub font: Handle<Font>, 
+}
+
+// determ position of discard removed chess pieces
 pub enum DiscardArea {
     TOP,
     BOTTOM,
@@ -129,15 +134,6 @@ impl Board {
         self.image_size * self.discard_image_scale()
     }
 }
-
-// pub struct DiscardTray {
-//     pub start_x_point: f32,
-//     pub start_y_point: f32,
-//     pub image_size: f32,
-//     pub image_scale: f32,
-//     pub first_element: i8,
-//     pub last_element: i8,
-// }
 
 #[derive(Component)]
 pub struct MainCamera;

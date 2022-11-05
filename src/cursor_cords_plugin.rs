@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::camera::RenderTarget};
 
-use crate::models::common_resources::{Board, BoardPointer, MainCamera};
+use crate::models::common_resources::{Board, BoardPointer, MainCamera, FontHolder};
 
 #[derive(Component)]
 struct CursorText;
@@ -15,7 +15,7 @@ impl Plugin for CursorCordsPlugin {
     }
 }
 
-fn set_up_cursor_cords(assets: Res<AssetServer>, mut commands: Commands) {
+fn set_up_cursor_cords(mut commands: Commands, font_holder: Res<FontHolder>) {
     commands
         .spawn_bundle(
             // Create a TextBundle that has a Text with a single section.
@@ -23,7 +23,7 @@ fn set_up_cursor_cords(assets: Res<AssetServer>, mut commands: Commands) {
                 // Accepts a `String` or any type that converts into a `String`, such as `&str`
                 "",
                 TextStyle {
-                    font: assets.load("fonts/FiraMono-Medium.ttf"),
+                    font: font_holder.font.clone(),
                     font_size: 30.0,
                     color: Color::WHITE,
                 },

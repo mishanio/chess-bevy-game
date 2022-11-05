@@ -79,6 +79,8 @@ fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, b
             AssetsHelper::spawn_chess_cell(cell, &mut commands, &board, &assets);
         }
     }
+    // for i in board.s
+
 }
 
 fn set_up_chess_pieces_system(
@@ -119,7 +121,7 @@ fn despawn_chess_pieces(
     let pieces: Vec<&ChessPiece> = q_despawn.iter().map(|tup| tup.1).collect();
 
     let tile_map = PieceParser::save_tile_map(&pieces, &board);
-    warn!("tile_map:\n{}", tile_map);
+    // warn!("tile_map:\n{}", tile_map);
     pieces_store.state = Some(tile_map);
     for (entity, _) in q_despawn.iter() {
         commands.entity(entity).despawn();

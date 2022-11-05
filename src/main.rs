@@ -6,7 +6,7 @@ use custom_cursor_plugin::CustomCursorPlugin;
 use display_current_turn_plugin::DisplayCurrentTurnPlugin;
 use models::{
     app_state::AppState,
-    common_resources::{Board, BoardPointer, GameState, MainCamera},
+    common_resources::{Board, BoardPointer, GameState, MainCamera, FontHolder},
 };
 use titles::{TitleLocale, Titles};
 use ui_menu_plugin::UiMenuPlugin;
@@ -40,6 +40,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_state(AppState::MainMenu)
         .add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
+        .add_startup_system_to_stage(StartupStage::PreStartup, set_up_font_resource)
         .add_plugin(ChessBoardPlugin)
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
@@ -57,6 +58,12 @@ fn set_up_resources(mut commands: Commands) {
     commands
         .spawn_bundle(Camera2dBundle::default())
         .insert(MainCamera);
+}
+
+fn set_up_font_resource(mut commands: Commands, assets: Res<AssetServer>) {
+    commands.insert_resource(FontHolder {
+        font: assets.load("fonts/FiraMono-Medium.ttf"),
+    });
 }
 
 fn change_game_state(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {

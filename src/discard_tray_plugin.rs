@@ -6,7 +6,7 @@ use crate::models::app_state::AppState;
 use crate::models::chess_piece::PieceType;
 use crate::models::common_chess::ChessColor;
 use crate::models::common_resources::GameState;
-use crate::models::removed_chess_piece::{ChessPieceRemovedEvent, RemovedChessPiece, self};
+use crate::models::removed_chess_piece::{ChessPieceRemovedEvent, RemovedChessPiece};
 use crate::{App, Board, Plugin};
 
 #[derive(Default)]

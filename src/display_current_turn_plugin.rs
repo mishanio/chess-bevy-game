@@ -4,7 +4,7 @@ use crate::{
     assets_helper::AssetsHelper,
     models::{
         app_state::AppState, chess_move_state::MoveState, chess_piece::PieceType,
-        common_chess::ChessColor, common_resources::Board,
+        common_chess::ChessColor, common_resources::{Board, FontHolder},
     },
     titles::Titles,
 };
@@ -79,7 +79,7 @@ fn set_up_display_turn_resource_system(mut commands: Commands, assets: Res<Asset
 
 fn set_up_display_turn_components(
     mut commands: Commands,
-    assets: Res<AssetServer>,
+    font_holder: Res<FontHolder>,
     board: Res<Board>,
     titles: Res<Titles>,
 ) {
@@ -102,7 +102,7 @@ fn set_up_display_turn_components(
             text: Text::from_section(
                 titles.turn.clone(),
                 TextStyle {
-                    font: assets.load("fonts/FiraMono-Medium.ttf"),
+                    font: font_holder.font.clone(),
                     font_size: 30.0,
                     color: Color::WHITE,
                 },
@@ -122,7 +122,7 @@ fn set_up_display_turn_components(
             text: Text::from_section(
                 titles.check.clone(),
                 TextStyle {
-                    font: assets.load("fonts/FiraMono-Medium.ttf"),
+                    font: font_holder.font.clone(),
                     font_size: 30.0,
                     color: Color::RED,
                 },
@@ -142,7 +142,7 @@ fn set_up_display_turn_components(
             text: Text::from_section(
                 titles.mate.clone(),
                 TextStyle {
-                    font: assets.load("fonts/FiraMono-Medium.ttf"),
+                    font: font_holder.font.clone(),
                     font_size: 30.0,
                     color: Color::RED,
                 },

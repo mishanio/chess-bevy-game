@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    models::{app_state::AppState, common_resources::GameState},
+    models::{app_state::AppState, common_resources::{GameState, FontHolder}},
     titles::Titles,
 };
 
@@ -37,7 +37,7 @@ impl Plugin for UiMenuPlugin {
     }
 }
 
-fn setup_ui_menu(mut commands: Commands, assets: Res<AssetServer>, titles: Res<Titles>) {
+fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: Res<Titles>) {
     let button = ButtonBundle {
         style: Style {
             size: Size::new(Val::Px(200.0), Val::Px(65.0)),
@@ -50,7 +50,7 @@ fn setup_ui_menu(mut commands: Commands, assets: Res<AssetServer>, titles: Res<T
         ..default()
     };
     let text_style = TextStyle {
-        font: assets.load("fonts/FiraMono-Medium.ttf"),
+        font: font_holder.font.clone(),
         font_size: 30.,
         color: Color::rgb(0.9, 0.9, 0.9),
     };
