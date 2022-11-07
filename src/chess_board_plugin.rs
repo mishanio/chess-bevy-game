@@ -9,7 +9,7 @@ use crate::{
         chess_cell::{ChessCell, ChessCellState},
         chess_move_state::MoveState,
         chess_piece::ChessPiece,
-        common_resources::{Board, BoardPointer, GameState},
+        common_resources::{Board, BoardPointer, FontHolder, GameState},
         removed_chess_piece::ChessPieceRemovedEvent,
     },
     piece_parser::PieceParser,
@@ -24,6 +24,8 @@ struct MoveStateStore {
     state: Option<MoveState>,
 }
 
+#[derive(Component)]
+struct StaticDespawnable;
 pub struct ChessBoardPlugin;
 
 impl Plugin for ChessBoardPlugin {
@@ -35,7 +37,8 @@ impl Plugin for ChessBoardPlugin {
                 SystemSet::on_enter(AppState::Game)
                     .with_system(set_up_resources.label("setup_resource"))
                     .with_system(set_up_chess_board_system.after("setup_resource"))
-                    .with_system(set_up_chess_pieces_system.after("setup_resource")),
+                    .with_system(set_up_chess_pieces_system.after("setup_resource"))
+                    .with_system(set_up_board_boarding_system.after("setup_resource")),
             )
             .add_system_set(
                 SystemSet::on_update(AppState::Game)
@@ -51,6 +54,7 @@ impl Plugin for ChessBoardPlugin {
                 SystemSet::on_exit(AppState::Game)
                     .with_system(despawn_chess_board)
                     .with_system(despawn_chess_pieces)
+                    .with_system(despawn_boardings)
                     .with_system(save_move_state),
             );
     }
@@ -79,8 +83,41 @@ fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, b
             AssetsHelper::spawn_chess_cell(cell, &mut commands, &board, &assets);
         }
     }
-    // for i in board.s
+}
 
+fn set_up_board_boarding_system(
+    mut commands: Commands,
+    font_holder: Res<FontHolder>,
+    board: Res<Board>,
+) {
+    for j in board.cell_range() {
+        for (i, directtion) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
+            let y = board.y_coordinate(j);
+            let x = board.x_coordinate(i);
+            commands
+                .spawn_bundle(Text2dBundle {
+                    text: Text::from_section(
+                        (j + 1).to_string(),
+                        TextStyle {
+                            font: font_holder.font.clone(),
+                            font_size: board.image_size_scaled() / 2.,
+                            color: Color::WHITE,
+                        },
+                    ),
+                    transform: Transform {
+                        translation: Vec3::new(
+                            x + board.image_size_scaled() * directtion,
+                            y + board.image_size_scaled() / 4.,
+                            0.0,
+                        ),
+                        scale: Vec3::splat(1.0),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(StaticDespawnable);
+        }
+    }
 }
 
 fn set_up_chess_pieces_system(
@@ -107,6 +144,11 @@ fn set_up_chess_pieces_system(
 }
 
 fn despawn_chess_board(mut commands: Commands, q_despawn: Query<Entity, With<ChessCell>>) {
+    for entity in q_despawn.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+fn despawn_boardings(mut commands: Commands, q_despawn: Query<Entity, With<StaticDespawnable>>) {
     for entity in q_despawn.iter() {
         commands.entity(entity).despawn();
     }

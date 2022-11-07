@@ -1,6 +1,9 @@
 use std::ops::Range;
 
-use bevy::{prelude::{Component, Handle}, text::Font};
+use bevy::{
+    prelude::{Component, Handle},
+    text::Font,
+};
 
 pub enum GameState {
     NEW,
@@ -8,7 +11,7 @@ pub enum GameState {
 }
 
 pub struct FontHolder {
-    pub font: Handle<Font>, 
+    pub font: Handle<Font>,
 }
 
 // determ position of discard removed chess pieces
@@ -69,11 +72,11 @@ impl Board {
         return (self.x_coordinate(pos.i), self.y_coordinate(pos.j));
     }
 
-    fn x_coordinate(&self, pos: i8) -> f32 {
+    pub fn x_coordinate(&self, pos: i8) -> f32 {
         self.start_x_point + (pos as f32) * self.image_size_scaled()
     }
 
-    fn y_coordinate(&self, pos: i8) -> f32 {
+    pub fn y_coordinate(&self, pos: i8) -> f32 {
         self.start_y_point + (pos as f32) * self.image_size_scaled()
     }
 
