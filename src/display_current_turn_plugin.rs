@@ -3,8 +3,11 @@ use bevy::{prelude::*, text::Text2dSize};
 use crate::{
     assets_helper::AssetsHelper,
     models::{
-        app_state::AppState, chess_move_state::MoveState, chess_piece::PieceType,
-        common_chess::ChessColor, common_resources::{Board, FontHolder},
+        app_state::AppState,
+        chess_move_state::MoveState,
+        chess_piece::PieceType,
+        common_chess::ChessColor,
+        common_resources::{Board, FontHolder},
     },
     titles::Titles,
 };
@@ -83,8 +86,10 @@ fn set_up_display_turn_components(
     board: Res<Board>,
     titles: Res<Titles>,
 ) {
-    let text_x = board.end_x_point();
-    let text_y = board.end_y_point() - board.image_size_scaled() / 2.;
+    let text_x = board.end_x_point() + 2. * board.image_size_scaled();
+    let text_y = board.end_y_point() - board.image_size_scaled();
+    let text_z = 2.0;
+    let font_size = board.image_size_scaled() / 2.;
 
     commands
         .spawn_bundle(SpriteBundle {
@@ -103,12 +108,13 @@ fn set_up_display_turn_components(
                 titles.turn.clone(),
                 TextStyle {
                     font: font_holder.font.clone(),
-                    font_size: 30.0,
+                    font_size,
                     color: Color::WHITE,
                 },
-            ),
+            )
+            .with_alignment(TextAlignment::CENTER),
             transform: Transform {
-                translation: Vec3::new(text_x, text_y, 0.0),
+                translation: Vec3::new(text_x, text_y, text_z),
                 scale: Vec3::splat(1.0),
                 ..default()
             },
@@ -123,12 +129,13 @@ fn set_up_display_turn_components(
                 titles.check.clone(),
                 TextStyle {
                     font: font_holder.font.clone(),
-                    font_size: 30.0,
+                    font_size: font_size,
                     color: Color::RED,
                 },
-            ),
+            )
+            .with_alignment(TextAlignment::CENTER),
             transform: Transform {
-                translation: Vec3::new(text_x, text_y - 40., 0.0),
+                translation: Vec3::new(text_x, text_y - font_size, text_z),
                 scale: Vec3::splat(1.0),
                 ..default()
             },
@@ -143,12 +150,13 @@ fn set_up_display_turn_components(
                 titles.mate.clone(),
                 TextStyle {
                     font: font_holder.font.clone(),
-                    font_size: 30.0,
+                    font_size: font_size,
                     color: Color::RED,
                 },
-            ),
+            )
+            .with_alignment(TextAlignment::CENTER),
             transform: Transform {
-                translation: Vec3::new(text_x, text_y - 80., 0.0),
+                translation: Vec3::new(text_x, text_y - font_size, text_z),
                 scale: Vec3::splat(1.0),
                 ..default()
             },
@@ -178,14 +186,16 @@ fn display_current_turn_system(
     >,
     move_state: Res<MoveState>,
     turn_image_holder: Res<TurnImageHolder>,
+    board: Res<Board>,
 ) {
     let (text_transform, text_size) = q_current_text.single_mut();
     // text.sections[0].value = format!("Current move: {}", color_label);
 
     let (mut image, mut image_transform) = q_current_image.single_mut();
     *image = turn_image_holder.get_image(&move_state.current_collor);
-    image_transform.translation.x = text_transform.translation.x + text_size.size.x + 30.;
-    image_transform.translation.y = text_transform.translation.y - text_size.size.y / 2.5;
+    image_transform.translation.x =
+        text_transform.translation.x + text_size.size.x + board.image_size_scaled() / 4.;
+    image_transform.translation.y = text_transform.translation.y;
 }
 
 fn display_check_state_system(

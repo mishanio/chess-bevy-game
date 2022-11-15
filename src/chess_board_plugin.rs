@@ -90,8 +90,9 @@ fn set_up_board_boarding_system(
     font_holder: Res<FontHolder>,
     board: Res<Board>,
 ) {
+    let z = 2.0;
     for j in board.cell_range() {
-        for (i, directtion) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
+        for (i, x_directtion) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
             let y = board.y_coordinate(j);
             let x = board.x_coordinate(i);
             commands
@@ -103,14 +104,37 @@ fn set_up_board_boarding_system(
                             font_size: board.image_size_scaled() / 2.,
                             color: Color::WHITE,
                         },
-                    ),
+                    )
+                    .with_alignment(TextAlignment::CENTER),
                     transform: Transform {
-                        translation: Vec3::new(
-                            x + board.image_size_scaled() * directtion,
-                            y + board.image_size_scaled() / 4.,
-                            0.0,
-                        ),
-                        scale: Vec3::splat(1.0),
+                        translation: Vec3::new(x + board.image_size_scaled() * x_directtion, y, z),
+                        // scale: Vec3::splat(1.0),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(StaticDespawnable);
+        }
+    }
+    let chars = vec!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    for i in board.cell_range() {
+        for (j, y_directtion) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
+            let y = board.y_coordinate(j);
+            let x = board.x_coordinate(i);
+            commands
+                .spawn_bundle(Text2dBundle {
+                    text: Text::from_section(
+                        chars[i as usize],
+                        TextStyle {
+                            font: font_holder.font.clone(),
+                            font_size: board.image_size_scaled() / 2.,
+                            color: Color::WHITE,
+                        },
+                    )
+                    .with_alignment(TextAlignment::CENTER),
+                    transform: Transform {
+                        translation: Vec3::new(x, y + board.image_size_scaled() * y_directtion, z),
+                        // scale: Vec3::splat(1.0),
                         ..default()
                     },
                     ..default()
