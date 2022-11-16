@@ -9,7 +9,7 @@ use crate::{
         chess_cell::{ChessCell, ChessCellState},
         chess_move_state::MoveState,
         chess_piece::ChessPiece,
-        common_resources::{Board, BoardPointer, FontHolder, GameState},
+        common_resources::{Board, BoardPointer, FontHolder, GameState, StaticDespawnable},
         removed_chess_piece::ChessPieceRemovedEvent,
     },
     piece_parser::PieceParser,
@@ -24,8 +24,6 @@ struct MoveStateStore {
     state: Option<MoveState>,
 }
 
-#[derive(Component)]
-struct StaticDespawnable;
 pub struct ChessBoardPlugin;
 
 impl Plugin for ChessBoardPlugin {
@@ -52,9 +50,8 @@ impl Plugin for ChessBoardPlugin {
             )
             .add_system_set(
                 SystemSet::on_exit(AppState::Game)
-                    .with_system(despawn_chess_board)
                     .with_system(despawn_chess_pieces)
-                    .with_system(despawn_boardings)
+                    .with_system(despawn_static)
                     .with_system(save_move_state),
             );
     }
@@ -88,59 +85,67 @@ fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, b
 fn set_up_board_boarding_system(
     mut commands: Commands,
     font_holder: Res<FontHolder>,
+    assets: Res<AssetServer>,
     board: Res<Board>,
 ) {
     let z = 2.0;
     for j in board.cell_range() {
-        for (i, x_directtion) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
+        for (i, x_direction) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
             let y = board.y_coordinate(j);
-            let x = board.x_coordinate(i);
-            commands
-                .spawn_bundle(Text2dBundle {
-                    text: Text::from_section(
-                        (j + 1).to_string(),
-                        TextStyle {
-                            font: font_holder.font.clone(),
-                            font_size: board.image_size_scaled() / 2.,
-                            color: Color::WHITE,
-                        },
-                    )
-                    .with_alignment(TextAlignment::CENTER),
-                    transform: Transform {
-                        translation: Vec3::new(x + board.image_size_scaled() * x_directtion, y, z),
-                        // scale: Vec3::splat(1.0),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .insert(StaticDespawnable);
+            let x = board.x_coordinate(i) + board.image_size_scaled() * x_direction;
+            let text = (j + 1).to_string();
+
+            AssetsHelper::spawn_text_boarding(
+                &mut commands,
+                Vec3::new(x, y, z),
+                text,
+                &font_holder,
+                &board,
+            );
+            AssetsHelper::spawn_chess_boarding_cell(
+                &mut commands,
+                Vec3::new(x, y, 0.),
+                &assets,
+                &board,
+            );
         }
     }
     let chars = vec!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     for i in board.cell_range() {
         for (j, y_directtion) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
-            let y = board.y_coordinate(j);
+            let y = board.y_coordinate(j) + board.image_size_scaled() * y_directtion;
             let x = board.x_coordinate(i);
-            commands
-                .spawn_bundle(Text2dBundle {
-                    text: Text::from_section(
-                        chars[i as usize],
-                        TextStyle {
-                            font: font_holder.font.clone(),
-                            font_size: board.image_size_scaled() / 2.,
-                            color: Color::WHITE,
-                        },
-                    )
-                    .with_alignment(TextAlignment::CENTER),
-                    transform: Transform {
-                        translation: Vec3::new(x, y + board.image_size_scaled() * y_directtion, z),
-                        // scale: Vec3::splat(1.0),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .insert(StaticDespawnable);
+            let text = chars[i as usize].to_string();
+
+            AssetsHelper::spawn_text_boarding(
+                &mut commands,
+                Vec3::new(x, y, z),
+                text,
+                &font_holder,
+                &board,
+            );
+            AssetsHelper::spawn_chess_boarding_cell(
+                &mut commands,
+                Vec3::new(x, y, 0.),
+                &assets,
+                &board,
+            );
         }
+    }
+    for (i, j, x_direction, y_directtion) in vec![
+        (board.first_element, board.first_element, -1., -1.),
+        (board.first_element, board.last_element, -1., 1.),
+        (board.last_element, board.first_element, 1., -1.),
+        (board.last_element, board.last_element, 1., 1.),
+    ] {
+        let x = board.x_coordinate(i) + board.image_size_scaled() * x_direction;
+        let y = board.y_coordinate(j) + board.image_size_scaled() * y_directtion;
+        AssetsHelper::spawn_chess_boarding_cell(
+            &mut commands,
+            Vec3::new(x, y, 0.),
+            &assets,
+            &board,
+        );
     }
 }
 
@@ -167,12 +172,7 @@ fn set_up_chess_pieces_system(
     }
 }
 
-fn despawn_chess_board(mut commands: Commands, q_despawn: Query<Entity, With<ChessCell>>) {
-    for entity in q_despawn.iter() {
-        commands.entity(entity).despawn();
-    }
-}
-fn despawn_boardings(mut commands: Commands, q_despawn: Query<Entity, With<StaticDespawnable>>) {
+fn despawn_static(mut commands: Commands, q_despawn: Query<Entity, With<StaticDespawnable>>) {
     for entity in q_despawn.iter() {
         commands.entity(entity).despawn();
     }

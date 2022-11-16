@@ -1,7 +1,7 @@
 use crate::models::chess_cell::ChessCell;
 use crate::models::chess_piece::{ChessPiece, PieceType};
 use crate::models::common_chess::ChessColor;
-use crate::models::common_resources::DiscardArea;
+use crate::models::common_resources::{DiscardArea, FontHolder, StaticDespawnable};
 use crate::models::removed_chess_piece::RemovedChessPiece;
 use crate::Board;
 use bevy::prelude::*;
@@ -75,7 +75,55 @@ impl AssetsHelper {
                 },
                 ..Default::default()
             })
-            .insert(cell);
+            .insert(cell)
+            .insert(StaticDespawnable);
+    }
+
+    pub fn spawn_chess_boarding_cell(
+        commands: &mut Commands,
+        vec3: Vec3,
+        assets: &AssetServer,
+        board: &Board,
+    ) {
+        let cell_image = AssetsHelper::load_boarding_image(assets);
+        commands
+            .spawn_bundle(SpriteBundle {
+                texture: cell_image,
+                transform: Transform {
+                    translation: vec3,
+                    scale: Vec3::splat(board.image_scale),
+                    ..default()
+                },
+                ..Default::default()
+            })
+            .insert(StaticDespawnable);
+    }
+
+    pub fn spawn_text_boarding(
+        commands: &mut Commands,
+        vec3: Vec3,
+        text: String,
+        font_holder: &FontHolder,
+        board: &Board,
+    ) {
+        commands
+            .spawn_bundle(Text2dBundle {
+                text: Text::from_section(
+                    text,
+                    TextStyle {
+                        font: font_holder.font.clone(),
+                        font_size: board.image_size_scaled() / 2.,
+                        color: Color::WHITE,
+                    },
+                )
+                .with_alignment(TextAlignment::CENTER),
+                transform: Transform {
+                    translation: vec3,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(StaticDespawnable);
     }
 
     pub fn load_piece_image(
@@ -110,6 +158,11 @@ impl AssetsHelper {
             ChessColor::BLACK => "square brown dark_png_shadow_128px.png",
         };
 
+        return assets.load(&format!("shadowed/128px/{}", sprite_name));
+    }
+
+    fn load_boarding_image(assets: &AssetServer) -> Handle<Image> {
+        let sprite_name = "square gray light _png_shadow_128px.png";
         return assets.load(&format!("shadowed/128px/{}", sprite_name));
     }
 
