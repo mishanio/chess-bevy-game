@@ -93,7 +93,7 @@ fn set_up_display_turn_components(
     let font_size = board.image_size_scaled() / 2.;
 
     commands
-        .spawn_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             transform: Transform {
                 scale: Vec3::splat(board.discard_image_scale()),
                 ..default()
@@ -104,7 +104,7 @@ fn set_up_display_turn_components(
         .insert(Despawnable);
 
     commands
-        .spawn_bundle(Text2dBundle {
+        .spawn(Text2dBundle {
             text: Text::from_section(
                 titles.turn.clone(),
                 TextStyle {
@@ -125,7 +125,7 @@ fn set_up_display_turn_components(
         .insert(Despawnable);
 
     commands
-        .spawn_bundle(Text2dBundle {
+        .spawn(Text2dBundle {
             text: Text::from_section(
                 titles.check.clone(),
                 TextStyle {
@@ -146,7 +146,7 @@ fn set_up_display_turn_components(
         .insert(Despawnable);
 
     commands
-        .spawn_bundle(Text2dBundle {
+        .spawn(Text2dBundle {
             text: Text::from_section(
                 titles.mate.clone(),
                 TextStyle {

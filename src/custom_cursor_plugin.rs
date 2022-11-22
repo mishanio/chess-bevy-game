@@ -2,9 +2,7 @@ use bevy::prelude::*;
 
 // use crate::models::common_resources::BoardPointer;
 
-
 // const CURSOR_SCALE: f32 = 0.7;
-
 
 #[derive(Component)]
 struct CustomCursor;
@@ -12,7 +10,6 @@ struct CustomCursor;
 pub struct CustomCursorPlugin;
 
 impl Plugin for CustomCursorPlugin {
-
     fn build(&self, app: &mut App) {
         app
         .add_startup_system_to_stage(StartupStage::PreStartup, change_cursor_type)
@@ -23,7 +20,7 @@ impl Plugin for CustomCursorPlugin {
     }
 }
 
-fn change_cursor_type(mut windows: ResMut<Windows>,) {
+fn change_cursor_type(mut windows: ResMut<Windows>) {
     let window = windows.primary_mut();
     window.set_cursor_icon(CursorIcon::Hand);
 }
@@ -37,7 +34,7 @@ fn change_cursor_type(mut windows: ResMut<Windows>,) {
 //     let custom_cursor = assets.load("cursor/point-64.png");
 
 //     commands
-//     .spawn_bundle(SpriteBundle {
+//     .spawn(SpriteBundle {
 //         texture: custom_cursor,
 //         transform: Transform {
 //             translation: Vec3::new(0., 0., 2.0),
@@ -53,5 +50,5 @@ fn change_cursor_type(mut windows: ResMut<Windows>,) {
 //     let mut custom_cursor_transform = q_cursor.single_mut();
 //     custom_cursor_transform.translation.x = board_pionter.x - 34. * CURSOR_SCALE;
 //     custom_cursor_transform.translation.y = board_pionter.y - 64. * CURSOR_SCALE;
-    
+
 // }

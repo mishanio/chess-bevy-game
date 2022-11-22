@@ -19,7 +19,7 @@ impl AssetsHelper {
             AssetsHelper::load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
         let (x, y) = board.coordinates(&chess_piece.pos);
         commands
-            .spawn_bundle(SpriteBundle {
+            .spawn(SpriteBundle {
                 texture: image,
                 transform: Transform {
                     translation: Vec3::new(x, y, 1.0),
@@ -45,7 +45,7 @@ impl AssetsHelper {
         };
         let (x, y) = board.discard_tray_position(chess_piece.num, &discard_area);
         commands
-            .spawn_bundle(SpriteBundle {
+            .spawn(SpriteBundle {
                 texture: image,
                 transform: Transform {
                     translation: Vec3::new(x, y, 1.0),
@@ -66,7 +66,7 @@ impl AssetsHelper {
         let (x, y) = board.coordinates(&cell.pos);
         let cell_image = AssetsHelper::load_cell_image(&cell.color(), assets);
         commands
-            .spawn_bundle(SpriteBundle {
+            .spawn(SpriteBundle {
                 texture: cell_image,
                 transform: Transform {
                     translation: Vec3::new(x, y, 0.0),
@@ -87,7 +87,7 @@ impl AssetsHelper {
     ) {
         let cell_image = AssetsHelper::load_boarding_image(assets);
         commands
-            .spawn_bundle(SpriteBundle {
+            .spawn(SpriteBundle {
                 texture: cell_image,
                 transform: Transform {
                     translation: vec3,
@@ -107,7 +107,7 @@ impl AssetsHelper {
         board: &Board,
     ) {
         commands
-            .spawn_bundle(Text2dBundle {
+            .spawn(Text2dBundle {
                 text: Text::from_section(
                     text,
                     TextStyle {

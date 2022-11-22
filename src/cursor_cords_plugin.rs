@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::camera::RenderTarget};
 
-use crate::models::common_resources::{Board, BoardPointer, MainCamera, FontHolder};
+use crate::models::common_resources::{Board, BoardPointer, FontHolder, MainCamera};
 
 #[derive(Component)]
 struct CursorText;
@@ -17,7 +17,7 @@ impl Plugin for CursorCordsPlugin {
 
 fn set_up_cursor_cords(mut commands: Commands, font_holder: Res<FontHolder>) {
     commands
-        .spawn_bundle(
+        .spawn(
             // Create a TextBundle that has a Text with a single section.
             TextBundle::from_section(
                 // Accepts a `String` or any type that converts into a `String`, such as `&str`
@@ -91,5 +91,3 @@ fn text_update_system(bp: Res<BoardPointer>, mut query: Query<&mut Text, With<Cu
         text.sections[0].value = format!("World coords: x: {}, y: {}", bp.x, bp.y);
     }
 }
-
-
