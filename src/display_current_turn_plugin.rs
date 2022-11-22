@@ -12,6 +12,7 @@ use crate::{
     titles::Titles,
 };
 
+#[derive(Resource)]
 struct TurnImageHolder {
     white_turn_img: Handle<Image>,
     black_turn_img: Handle<Image>,

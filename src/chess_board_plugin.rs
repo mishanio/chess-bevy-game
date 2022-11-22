@@ -15,11 +15,11 @@ use crate::{
     piece_parser::PieceParser,
 };
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 struct PiecesStore {
     state: Option<String>,
 }
-#[derive(Default)]
+#[derive(Default, Resource)]
 struct MoveStateStore {
     state: Option<MoveState>,
 }

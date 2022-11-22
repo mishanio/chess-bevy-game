@@ -9,11 +9,11 @@ use crate::models::common_resources::GameState;
 use crate::models::removed_chess_piece::{ChessPieceRemovedEvent, RemovedChessPiece};
 use crate::{App, Board, Plugin};
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 struct DiscardTrayHolder {
     value: HashMap<ChessColor, i8>,
 }
-#[derive(Default)]
+#[derive(Default, Resource)]
 struct DiscardPiecesStore {
     state: Vec<(ChessColor, PieceType)>,
 }
@@ -46,10 +46,15 @@ fn set_up_resources(
         pieces_store.state = vec![];
     }
     for (color, piece_type) in pieces_store.state.iter() {
-        add_to_dicard(color, piece_type, &mut discard_tray_holder, &mut commands, &assets, &board);
+        add_to_dicard(
+            color,
+            piece_type,
+            &mut discard_tray_holder,
+            &mut commands,
+            &assets,
+            &board,
+        );
     }
-
-
 }
 
 fn despawn_discard_tray_pieces(
@@ -61,7 +66,9 @@ fn despawn_discard_tray_pieces(
     pieces_store.state = vec![];
     discard_tray_holder.value = HashMap::new();
     for (entity, chess_piece) in q_despawn.iter() {
-        pieces_store.state.push((chess_piece.color.clone(), chess_piece.piece_type.clone()));
+        pieces_store
+            .state
+            .push((chess_piece.color.clone(), chess_piece.piece_type.clone()));
         commands.entity(entity).despawn();
     }
 }

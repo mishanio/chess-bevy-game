@@ -1,26 +1,30 @@
 use std::ops::Range;
 
 use bevy::{
-    prelude::{Component, Handle},
+    prelude::{Component, Handle, Resource},
     text::Font,
 };
 
+#[derive(Resource)]
 pub enum GameState {
     NEW,
     CONTINUE,
 }
 
+#[derive(Resource)]
 pub struct FontHolder {
     pub font: Handle<Font>,
 }
 
 // determ position of discard removed chess pieces
+#[derive(Resource)]
 pub enum DiscardArea {
     TOP,
     BOTTOM,
 }
 
 // mouse pointer resource
+#[derive(Resource)]
 pub struct BoardPointer {
     pub x: f32,
     pub y: f32,
@@ -34,6 +38,7 @@ pub struct CellPosition {
 }
 
 // board control resource
+#[derive(Resource)]
 pub struct Board {
     pub start_x_point: f32,
     pub start_y_point: f32,

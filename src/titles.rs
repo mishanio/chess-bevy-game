@@ -1,8 +1,10 @@
+use bevy::prelude::Resource;
+
 pub enum TitleLocale {
     RU,
     EN,
 }
-
+#[derive(Resource)]
 pub struct Titles {
     pub title: String,
     pub check: String,

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::common_chess::ChessColor;
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Resource)]
 pub struct MoveState {
     pub selected_piece: Option<Entity>,
     pub selected_cell: Option<Entity>,

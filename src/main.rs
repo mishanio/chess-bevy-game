@@ -6,7 +6,7 @@ use custom_cursor_plugin::CustomCursorPlugin;
 use display_current_turn_plugin::DisplayCurrentTurnPlugin;
 use models::{
     app_state::AppState,
-    common_resources::{Board, BoardPointer, GameState, MainCamera, FontHolder},
+    common_resources::{Board, BoardPointer, FontHolder, GameState, MainCamera},
 };
 use titles::{TitleLocale, Titles};
 use ui_menu_plugin::UiMenuPlugin;
@@ -26,18 +26,20 @@ mod ui_menu_plugin;
 
 fn main() {
     let titles = Titles::new(TitleLocale::RU);
+    let window_title = titles.title.clone();
     App::new()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
-        .insert_resource(WindowDescriptor {
-            title: titles.title.clone(),
-            // width: 1920.,
-            // height: 1080.,
-            mode: WindowMode::Windowed,
-            ..Default::default()
-        })
         .insert_resource(GameState::NEW)
         .insert_resource(titles)
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            window: WindowDescriptor {
+                title: window_title,
+                // width: 1920.,
+                // height: 1080.,
+                ..default()
+            },
+            ..default()
+        }))
         .add_state(AppState::MainMenu)
         .add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
         .add_startup_system_to_stage(StartupStage::PreStartup, set_up_font_resource)
@@ -55,9 +57,7 @@ fn set_up_resources(mut commands: Commands) {
     commands.insert_resource(BoardPointer { x: 0., y: 0. });
     commands.insert_resource(Board::new(-200., -200., 128., 0.5));
 
-    commands
-        .spawn_bundle(Camera2dBundle::default())
-        .insert(MainCamera);
+    commands.spawn(Camera2dBundle::default()).insert(MainCamera);
 }
 
 fn set_up_font_resource(mut commands: Commands, assets: Res<AssetServer>) {

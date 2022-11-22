@@ -1,7 +1,10 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    models::{app_state::AppState, common_resources::{GameState, FontHolder}},
+    models::{
+        app_state::AppState,
+        common_resources::{FontHolder, GameState},
+    },
     titles::Titles,
 };
 
@@ -46,7 +49,7 @@ fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: R
             align_items: AlignItems::Center,
             ..default()
         },
-        color: NORMAL_BUTTON.into(),
+        background_color: NORMAL_BUTTON.into(),
         ..default()
     };
     let text_style = TextStyle {
@@ -56,7 +59,7 @@ fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: R
     };
 
     commands
-        .spawn_bundle(NodeBundle {
+        .spawn(NodeBundle {
             style: Style {
                 margin: UiRect::all(Val::Auto),
                 flex_direction: FlexDirection::ColumnReverse,
@@ -67,9 +70,9 @@ fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: R
         })
         .insert(OnGameScreen)
         .with_children(|node| {
-            node.spawn_bundle(button.clone())
+            node.spawn(button.clone())
                 .with_children(|button| {
-                    button.spawn_bundle(TextBundle::from_section(
+                    button.spawn(TextBundle::from_section(
                         titles.button_new_game.clone(),
                         text_style.clone(),
                     ));
@@ -77,9 +80,9 @@ fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: R
                 .insert(MenuButton::NewGame);
         })
         .with_children(|node| {
-            node.spawn_bundle(button.clone())
+            node.spawn(button.clone())
                 .with_children(|button| {
-                    button.spawn_bundle(TextBundle::from_section(
+                    button.spawn(TextBundle::from_section(
                         titles.button_continue_game.clone(),
                         text_style.clone(),
                     ));
@@ -87,9 +90,9 @@ fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: R
                 .insert(MenuButton::Continue);
         })
         .with_children(|node| {
-            node.spawn_bundle(button.clone())
+            node.spawn(button.clone())
                 .with_children(|button| {
-                    button.spawn_bundle(TextBundle::from_section(
+                    button.spawn(TextBundle::from_section(
                         titles.button_exit_game.clone(),
                         text_style.clone(),
                     ));
@@ -106,7 +109,7 @@ fn despawn_ui_menu(mut commands: Commands, q_dispawn: Query<Entity, With<OnGameS
 
 fn handle_ui_buttons_styles(
     mut interaction_query: Query<
-        (&Interaction, &mut UiColor),
+        (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
     >,
 ) {
