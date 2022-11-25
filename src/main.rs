@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowMode};
+use bevy::prelude::*;
 
 use chess_board_plugin::ChessBoardPlugin;
 use cursor_cords_plugin::CursorCordsPlugin;

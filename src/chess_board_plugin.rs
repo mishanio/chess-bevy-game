@@ -163,7 +163,7 @@ fn set_up_chess_pieces_system(
     let map = pieces_store
         .state
         .take()
-        .unwrap_or(PieceParser::test_tile_map());
+        .unwrap_or(PieceParser::default_tile_map());
 
     for element in PieceParser::parse_tile_map(map) {
         if let Some(piece) = element {
@@ -389,7 +389,7 @@ fn set_cell_selected(
 }
 
 fn move_piece_system(
-    _time: Res<Time>,
+    time: Res<Time>,
     board: Res<Board>,
     mut move_state: ResMut<MoveState>,
     q_chess_cell: Query<&ChessCell>,
@@ -414,27 +414,22 @@ fn move_piece_system(
 
     let (target_x, target_y) = board.coordinates(&chess_piece.pos);
 
-    // let target_vec = Vec3::new(target_x, target_y, 0.0);
-    // let current_x = board.x_coordinate(chess_piece.i);
-    // let current_y =  board.y_coordinate(chess_piece.j);
+    let target_vec = Vec3::new(target_x, target_y, transform.translation.z);
 
-    // let velocity = 2.;
+    let velocity = 10.;
+    transform.translation = transform
+        .translation
+        .lerp(target_vec, velocity * time.delta_seconds());
 
-    // transform.translation.x += time.delta_seconds() * velocity * (target_x - current_x);
-    // transform.translation.y += time.delta_seconds() * velocity * (target_y - current_y);
+    if transform.translation.abs_diff_eq(target_vec, 0.5) {
+        move_state.move_in_action = false;
+        move_state.selected_cell = None;
+        move_state.selected_piece = None;
 
-    // println!("target y {} , current y {}", target_y, transform.translation.y);
-
-    // if transform.translation.x == target_x && transform.translation.y == target_y {
-    //     move_state.move_in_action = false;
-    //     move_state.selected_cell = None;
-    //     move_state.selected_piece = None;
-    // }
-
-    transform.translation.x = target_x;
-    transform.translation.y = target_y;
-
-    move_state.next_move();
+        transform.translation.x = target_x;
+        transform.translation.y = target_y;
+        move_state.next_move();
+    }
 }
 
 fn remove_taken_piece_system(
