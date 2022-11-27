@@ -416,12 +416,12 @@ fn move_piece_system(
 
     let target_vec = Vec3::new(target_x, target_y, transform.translation.z);
 
-    let velocity = 10.;
+    let velocity = 20.;
     transform.translation = transform
         .translation
         .lerp(target_vec, velocity * time.delta_seconds());
 
-    if transform.translation.abs_diff_eq(target_vec, 0.5) {
+    if transform.translation.abs_diff_eq(target_vec, 1.0) {
         move_state.move_in_action = false;
         move_state.selected_cell = None;
         move_state.selected_piece = None;

@@ -62,7 +62,7 @@ fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: R
         .spawn(NodeBundle {
             style: Style {
                 margin: UiRect::all(Val::Auto),
-                flex_direction: FlexDirection::ColumnReverse,
+                flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 ..default()
             },
