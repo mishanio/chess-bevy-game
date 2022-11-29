@@ -24,6 +24,11 @@ struct MoveStateStore {
     state: Option<MoveState>,
 }
 
+const BOARDING_Z: f32 = 0.0;
+const BOARD_Z: f32 = 1.0;
+const PIECES_Z: f32 = 2.0;
+const TEXT_Z: f32 = 3.0;
+
 pub struct ChessBoardPlugin;
 
 impl Plugin for ChessBoardPlugin {
@@ -77,7 +82,14 @@ fn set_up_chess_board_system(assets: Res<AssetServer>, mut commands: Commands, b
     for j in board.cell_range() {
         for i in board.cell_range() {
             let cell = ChessCell::from(i, j);
-            AssetsHelper::spawn_chess_cell(cell, &mut commands, &board, &assets);
+            let (x, y) = board.coordinates(&cell.pos);
+            AssetsHelper::spawn_chess_cell(
+                &mut commands,
+                cell,
+                Vec3::new(x, y, BOARD_Z),
+                &board,
+                &assets,
+            );
         }
     }
 }
@@ -88,24 +100,18 @@ fn set_up_board_boarding_system(
     assets: Res<AssetServer>,
     board: Res<Board>,
 ) {
-    let z = 2.0;
+    let text_offset = 1.3;
     for j in board.cell_range() {
         for (i, x_direction) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
             let y = board.y_coordinate(j);
-            let x = board.x_coordinate(i) + board.image_size_scaled() * x_direction;
+            let x = board.x_coordinate(i) + (board.image_size_scaled() / text_offset) * x_direction;
             let text = (j + 1).to_string();
 
             AssetsHelper::spawn_text_boarding(
                 &mut commands,
-                Vec3::new(x, y, z),
+                Vec3::new(x, y, TEXT_Z),
                 text,
                 &font_holder,
-                &board,
-            );
-            AssetsHelper::spawn_chess_boarding_cell(
-                &mut commands,
-                Vec3::new(x, y, 0.),
-                &assets,
                 &board,
             );
         }
@@ -113,39 +119,32 @@ fn set_up_board_boarding_system(
     let chars = vec!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     for i in board.cell_range() {
         for (j, y_directtion) in vec![(board.first_element, -1.), (board.last_element, 1.)] {
-            let y = board.y_coordinate(j) + board.image_size_scaled() * y_directtion;
+            let y =
+                board.y_coordinate(j) + (board.image_size_scaled() / text_offset) * y_directtion;
             let x = board.x_coordinate(i);
             let text = chars[i as usize].to_string();
 
             AssetsHelper::spawn_text_boarding(
                 &mut commands,
-                Vec3::new(x, y, z),
+                Vec3::new(x, y, TEXT_Z),
                 text,
                 &font_holder,
                 &board,
             );
+        }
+    }
+
+    for j in board.first_element..(board.last_element + 2) {
+        for i in board.first_element..(board.last_element + 2) {
+            let y = board.y_coordinate(j) - board.image_size_scaled() / 2.;
+            let x = board.x_coordinate(i) - board.image_size_scaled() / 2.;
             AssetsHelper::spawn_chess_boarding_cell(
                 &mut commands,
-                Vec3::new(x, y, 0.),
+                Vec3::new(x, y, BOARDING_Z),
                 &assets,
                 &board,
             );
         }
-    }
-    for (i, j, x_direction, y_directtion) in vec![
-        (board.first_element, board.first_element, -1., -1.),
-        (board.first_element, board.last_element, -1., 1.),
-        (board.last_element, board.first_element, 1., -1.),
-        (board.last_element, board.last_element, 1., 1.),
-    ] {
-        let x = board.x_coordinate(i) + board.image_size_scaled() * x_direction;
-        let y = board.y_coordinate(j) + board.image_size_scaled() * y_directtion;
-        AssetsHelper::spawn_chess_boarding_cell(
-            &mut commands,
-            Vec3::new(x, y, 0.),
-            &assets,
-            &board,
-        );
     }
 }
 
@@ -167,7 +166,14 @@ fn set_up_chess_pieces_system(
 
     for element in PieceParser::parse_tile_map(map) {
         if let Some(piece) = element {
-            AssetsHelper::spawn_piece(piece, commands.borrow_mut(), &assets, &board);
+            let (x, y) = board.coordinates(&piece.pos);
+            AssetsHelper::spawn_piece(
+                commands.borrow_mut(),
+                piece,
+                Vec3::new(x, y, PIECES_Z),
+                &assets,
+                &board,
+            );
         }
     }
 }

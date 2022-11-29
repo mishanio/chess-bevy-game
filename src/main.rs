@@ -55,7 +55,7 @@ fn main() {
 
 fn set_up_resources(mut commands: Commands) {
     commands.insert_resource(BoardPointer { x: 0., y: 0. });
-    commands.insert_resource(Board::new(-200., -200., 128., 0.5));
+    commands.insert_resource(Board::new(-220., -220., 128., 0.48));
 
     commands.spawn(Camera2dBundle::default()).insert(MainCamera);
 }

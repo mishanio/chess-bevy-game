@@ -10,19 +10,20 @@ pub struct AssetsHelper;
 
 impl AssetsHelper {
     pub fn spawn_piece(
-        chess_piece: ChessPiece,
         commands: &mut Commands,
+        chess_piece: ChessPiece,
+        vec3: Vec3,
         assets: &AssetServer,
         board: &Board,
     ) {
         let image =
             AssetsHelper::load_piece_image(&chess_piece.color, &chess_piece.piece_type, assets);
-        let (x, y) = board.coordinates(&chess_piece.pos);
+
         commands
             .spawn(SpriteBundle {
                 texture: image,
                 transform: Transform {
-                    translation: Vec3::new(x, y, 1.0),
+                    translation: vec3,
                     scale: Vec3::splat(board.image_scale),
                     ..default()
                 },
@@ -58,18 +59,18 @@ impl AssetsHelper {
     }
 
     pub fn spawn_chess_cell(
-        cell: ChessCell,
         commands: &mut Commands,
+        cell: ChessCell,
+        vec3: Vec3,
         board: &Board,
         assets: &AssetServer,
     ) {
-        let (x, y) = board.coordinates(&cell.pos);
         let cell_image = AssetsHelper::load_cell_image(&cell.color(), assets);
         commands
             .spawn(SpriteBundle {
                 texture: cell_image,
                 transform: Transform {
-                    translation: Vec3::new(x, y, 0.0),
+                    translation: vec3,
                     scale: Vec3::splat(board.image_scale),
                     ..default()
                 },
