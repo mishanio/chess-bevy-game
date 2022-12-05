@@ -1,6 +1,10 @@
 use std::borrow::BorrowMut;
 
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    render::{mesh::Indices, render_resource::PrimitiveTopology},
+    sprite::MaterialMesh2dBundle,
+};
 
 use crate::{
     assets_helper::AssetsHelper,
@@ -26,8 +30,8 @@ struct MoveStateStore {
 
 const BOARDING_Z: f32 = 0.0;
 const BOARD_Z: f32 = 1.0;
-const PIECES_Z: f32 = 2.0;
-const TEXT_Z: f32 = 3.0;
+const PIECES_Z: f32 = 3.0;
+const TEXT_Z: f32 = 2.0;
 
 pub struct ChessBoardPlugin;
 
@@ -279,12 +283,38 @@ fn calculate_chess_cell_state_system(
     }
 }
 
-fn draw_highlight_chess_cell_system(mut q_chess_cells: Query<(&mut Sprite, &ChessCell)>) {
+fn draw_highlight_chess_cell_system(
+    board: Res<Board>,
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut q_chess_cells: Query<(&mut Sprite, &ChessCell)>,
+) {
     for (mut sprite, chess_cell) in q_chess_cells.iter_mut() {
         sprite.color = match chess_cell.state {
             ChessCellState::NONE => Color::rgb(1., 1., 1.),
             ChessCellState::HIGHLIGHTED => Color::rgb(0.8, 1., 1.),
-            ChessCellState::SELECTED => Color::rgb(0.7, 1., 1.),
+            ChessCellState::SELECTED =>
+            // {
+            // commands
+            //     .spawn(SpriteBundle {
+            //         texture: assets.load("green_border.png"),
+            //         transform: Transform {
+            //             translation: Vec3::new(
+            //                 board.x_coordinate(chess_cell.pos.i),
+            //                 board.y_coordinate(chess_cell.pos.j),
+            //                 TEXT_Z,
+            //             ),
+            //             scale: Vec3::splat(board.image_scale),
+            //             ..default()
+            //         },
+            //         ..Default::default()
+            //     })
+            //     .insert(StaticDespawnable);
+            // Color::rgb(1., 1., 1.)
+            // }
+            {
+                Color::rgb(0.7, 1., 1.)
+            }
             ChessCellState::ATTACKED => Color::ORANGE_RED,
         };
     }
