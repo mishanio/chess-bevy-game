@@ -19,3 +19,6 @@ cargo run --target wasm32-unknown-unknown
 
 cargo build --release --target wasm32-unknown-unknown
 wasm-bindgen --out-dir ./out/ --target web ./target/
+
+для создания спрайта 
+https://www.piskelapp.com/p/create/sprite
