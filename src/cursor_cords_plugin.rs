@@ -9,16 +9,17 @@ pub struct CursorCordsPlugin;
 
 impl Plugin for CursorCordsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(set_up_cursor_cords.in_base_set(StartupSet::Startup))
+        app.add_startup_system(set_up_cursor_cords.in_base_set(StartupSet::Startup))
             .add_system(set_board_pointer_system);
         // .add_system(text_update_system);
     }
 }
 
 fn set_up_cursor_cords(mut commands: Commands, font_holder: Res<FontHolder>) {
+    warn!("CursorCordsPlugin get FontHolder");
     commands
         .spawn(
-            // Create a TextBundle that has a Text with a single section.
+            // Create a TextBundle that has a Text with a single sections.
             TextBundle::from_section(
                 // Accepts a `String` or any type that converts into a `String`, such as `&str`
                 "",
@@ -46,47 +47,36 @@ fn set_up_cursor_cords(mut commands: Commands, font_holder: Res<FontHolder>) {
 
 fn set_board_pointer_system(
     // need to get window dimensions
-    wnds: Query<&Window, With<PrimaryWindow>>,
-    // query to get camera transform
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    primary_window: Query<(&Window, &PrimaryWindow)>,
+    all_windows: Query<&Window>,
+    camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     board: Res<Board>,
     mut board_pointer: ResMut<BoardPointer>,
 ) {
     // get the camera info and transform
     // assuming there is exactly one main camera entity, so query::single() is OK
-    let (camera, camera_transform) = q_camera.single();
+    let (camera, camera_transform) = camera_q.single();
 
     // get the window that the camera is displaying to (or the primary window)
 
-    let Ok(wnd) = wnds.get_single() else {
-        return;
+    let window: &Window = if let RenderTarget::Window(window_ref) = camera.target {
+        match window_ref {
+            bevy::window::WindowRef::Entity(id) => all_windows.get(id).unwrap(),
+            bevy::window::WindowRef::Primary => primary_window.single().0,
+        }
+    } else {
+        primary_window.single().0
     };
-    // let wnd = if let RenderTarget::Window(id) = camera.target {
-    //     wnds.get(id).unwrap()
-    // } else {
-    //     wnds.get_primary().unwrap()
-    // };
 
-    // check if the cursor is inside the window and get its position
-    if let Some(screen_pos) = wnd.cursor_position() {
-        // get the size of the window
-        let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
-
-        // convert screen position [0..resolution] to ndc [-1..1] (gpu coordinates)
-        let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
-
-        // matrix for undoing the projection and camera transform
-        let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix().inverse();
-
-        // use it to convert ndc to world-space coordinates
-        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
-
-        // reduce it to a 2D value
-        let world_pos: Vec2 = world_pos.truncate();
-
-        board_pointer.x = world_pos.x + board.board_offset();
-        board_pointer.y = world_pos.y + board.board_offset();
-        // eprintln!("World coords: {}/{}", board_pointer.x, board_pointer.y);
+    //  check if the cursor is inside the window and get its position
+    // then, ask bevy to convert into world coordinates, and truncate to discard Z
+    if let Some(world_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .map(|ray| ray.origin.truncate())
+    {
+        board_pointer.x = world_position.x + board.board_offset();
+        board_pointer.y = world_position.y + board.board_offset();
     }
 }
 

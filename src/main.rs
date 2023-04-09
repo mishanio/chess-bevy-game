@@ -41,12 +41,12 @@ fn main() {
             ..default()
         }))
         .add_state::<AppState>()
-        .add_systems((set_up_resources, set_up_font_resource).in_base_set(StartupSet::PreStartup))
+        .add_startup_systems((set_up_resources, set_up_font_resource).in_base_set(StartupSet::PreStartup))
         .add_plugin(ChessBoardPlugin)
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
         .add_plugin(DiscardTrayPlugin)
-        .add_plugin(DisplayCurrentTurnPlugin)
+        // .add_plugin(DisplayCurrentTurnPlugin)
         .add_plugin(UiMenuPlugin)
         .add_system(change_game_state)
         .run();
@@ -60,6 +60,7 @@ fn set_up_resources(mut commands: Commands) {
 }
 
 fn set_up_font_resource(mut commands: Commands, assets: Res<AssetServer>) {
+    warn!("main insert FontHolder");
     commands.insert_resource(FontHolder {
         font: assets.load("fonts/FiraMono-Medium.ttf"),
     });
