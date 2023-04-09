@@ -117,7 +117,7 @@ impl AssetsHelper {
                         color: Color::WHITE,
                     },
                 )
-                .with_alignment(TextAlignment::CENTER),
+                .with_alignment(TextAlignment::Center),
                 transform: Transform {
                     translation: vec3,
                     ..default()

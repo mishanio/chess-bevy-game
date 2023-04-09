@@ -1,4 +1,4 @@
-use bevy::{prelude::*, text::Text2dSize};
+use bevy::{prelude::*, render::view::visibility, text::TextLayoutInfo};
 
 use crate::{
     assets_helper::AssetsHelper,
@@ -45,22 +45,19 @@ pub struct DisplayCurrentTurnPlugin;
 
 impl Plugin for DisplayCurrentTurnPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(
-            StartupStage::PreStartup,
-            set_up_display_turn_resource_system,
+        app.add_startup_system(
+            set_up_display_turn_resource_system.in_base_set(StartupSet::PreStartup),
         )
         // .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
-        .add_system_set(
-            SystemSet::on_enter(AppState::Game).with_system(set_up_display_turn_components),
-        )
-        .add_system_set(
-            SystemSet::on_update(AppState::Game)
-                .with_system(display_current_turn_system)
-                .with_system(display_check_state_system)
-                .with_system(display_mate_state_system),
-        )
-        .add_system_set(
-            SystemSet::on_exit(AppState::Game).with_system(despawn_display_turn_components),
+        .add_system(set_up_display_turn_components.in_schedule(OnEnter(AppState::Game)))
+        .add_system(despawn_display_turn_components.in_schedule(OnExit(AppState::Game)))
+        .add_systems(
+            (
+                display_current_turn_system,
+                display_check_state_system,
+                display_mate_state_system,
+            )
+                .in_set(OnUpdate(AppState::Game)),
         );
     }
 }
@@ -113,7 +110,7 @@ fn set_up_display_turn_components(
                     color: Color::WHITE,
                 },
             )
-            .with_alignment(TextAlignment::CENTER),
+            .with_alignment(TextAlignment::Center),
             transform: Transform {
                 translation: Vec3::new(text_x, text_y, text_z),
                 scale: Vec3::splat(1.0),
@@ -134,7 +131,7 @@ fn set_up_display_turn_components(
                     color: Color::RED,
                 },
             )
-            .with_alignment(TextAlignment::CENTER),
+            .with_alignment(TextAlignment::Center),
             transform: Transform {
                 translation: Vec3::new(text_x, text_y - font_size, text_z),
                 scale: Vec3::splat(1.0),
@@ -155,7 +152,7 @@ fn set_up_display_turn_components(
                     color: Color::RED,
                 },
             )
-            .with_alignment(TextAlignment::CENTER),
+            .with_alignment(TextAlignment::Center),
             transform: Transform {
                 translation: Vec3::new(text_x, text_y - font_size, text_z),
                 scale: Vec3::splat(1.0),
@@ -178,7 +175,7 @@ fn despawn_display_turn_components(
 
 fn display_current_turn_system(
     mut q_current_text: Query<
-        (&Transform, &Text2dSize),
+        (&Transform, &TextLayoutInfo),
         (With<CurentTurnText>, Without<CurentTurnImage>),
     >,
     mut q_current_image: Query<
@@ -204,7 +201,11 @@ fn display_check_state_system(
     move_state: Res<MoveState>,
 ) {
     let mut check_state_visibility = q_check_status.single_mut();
-    check_state_visibility.is_visible = move_state.check_state.is_some();
+    let visibility = match move_state.check_state {
+        None => Visibility::Hidden,
+        Some(_) => Visibility::Visible,
+    };
+    *check_state_visibility = visibility;
 }
 
 fn display_mate_state_system(
@@ -212,5 +213,9 @@ fn display_mate_state_system(
     move_state: Res<MoveState>,
 ) {
     let mut mate_state_visibility = q_mate_status.single_mut();
-    mate_state_visibility.is_visible = move_state.mate_state.is_some();
+    let visibility = match move_state.check_state {
+        None => Visibility::Hidden,
+        Some(_) => Visibility::Visible,
+    };
+    *mate_state_visibility = visibility;
 }

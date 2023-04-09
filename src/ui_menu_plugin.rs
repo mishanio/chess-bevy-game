@@ -26,13 +26,9 @@ struct OnGameScreen;
 
 impl Plugin for UiMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::MainMenu).with_system(setup_ui_menu))
-            .add_system_set(SystemSet::on_exit(AppState::MainMenu).with_system(despawn_ui_menu))
-            .add_system_set(
-                SystemSet::on_update(AppState::MainMenu)
-                    .with_system(handle_ui_buttons_styles)
-                    .with_system(handle_button_clicked),
-            );
+        app.add_system(setup_ui_menu.in_schedule(OnEnter(AppState::MainMenu)))
+        .add_system(despawn_ui_menu.in_schedule(OnExit(AppState::MainMenu)))
+        .add_systems((handle_ui_buttons_styles, handle_button_clicked).in_set(OnUpdate(AppState::MainMenu)));
     }
 
     fn name(&self) -> &str {
@@ -130,7 +126,7 @@ fn handle_ui_buttons_styles(
 
 fn handle_button_clicked(
     new_game_interaction_query: Query<(&Interaction, &MenuButton), Changed<Interaction>>,
-    mut app_state: ResMut<State<AppState>>,
+    mut app_state: ResMut<NextState<AppState>>,
     mut exit: EventWriter<AppExit>,
     mut game_state: ResMut<GameState>,
 ) {
@@ -139,11 +135,11 @@ fn handle_button_clicked(
             match menu_button {
                 MenuButton::NewGame => {
                     *game_state = GameState::NEW;
-                    app_state.set(AppState::Game).unwrap()
+                    app_state.set(AppState::Game)
                 }
                 MenuButton::Continue => {
                     *game_state = GameState::CONTINUE;
-                    app_state.set(AppState::Game).unwrap()
+                    app_state.set(AppState::Game)
                 }
                 MenuButton::Exit => exit.send(AppExit),
             }

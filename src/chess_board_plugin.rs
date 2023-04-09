@@ -40,28 +40,31 @@ impl Plugin for ChessBoardPlugin {
         app.insert_resource(PiecesStore::default())
             .insert_resource(MoveStateStore::default())
             .add_event::<ChessPieceRemovedEvent>()
-            .add_system_set(
-                SystemSet::on_enter(AppState::Game)
-                    .with_system(set_up_resources.label("setup_resource"))
-                    .with_system(set_up_chess_board_system.after("setup_resource"))
-                    .with_system(set_up_chess_pieces_system.after("setup_resource"))
-                    .with_system(set_up_board_boarding_system.after("setup_resource")),
+            .add_systems(
+                (
+                    set_up_resources,
+                    set_up_chess_board_system,
+                    set_up_chess_pieces_system,
+                    set_up_board_boarding_system,
+                )
+                    .chain()
+                    .in_schedule(OnEnter(AppState::Game)),
             )
-            .add_system_set(
-                SystemSet::on_update(AppState::Game)
-                    .with_system(highlight_chess_piece_system)
-                    .with_system(calculate_chess_cell_state_system)
-                    .with_system(draw_highlight_chess_cell_system)
-                    .with_system(set_piece_selected)
-                    .with_system(set_cell_selected)
-                    .with_system(remove_taken_piece_system)
-                    .with_system(move_piece_system),
+            .add_systems(
+                (despawn_chess_pieces, despawn_static, save_move_state)
+                    .in_schedule(OnExit(AppState::Game)),
             )
-            .add_system_set(
-                SystemSet::on_exit(AppState::Game)
-                    .with_system(despawn_chess_pieces)
-                    .with_system(despawn_static)
-                    .with_system(save_move_state),
+            .add_systems(
+                (
+                    highlight_chess_piece_system,
+                    calculate_chess_cell_state_system,
+                    draw_highlight_chess_cell_system,
+                    set_piece_selected,
+                    set_cell_selected,
+                    remove_taken_piece_system,
+                    move_piece_system,
+                )
+                    .in_set(OnUpdate(AppState::Game)),
             );
     }
 }

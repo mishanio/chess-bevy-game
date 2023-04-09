@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::RenderTarget};
+use bevy::{prelude::*, render::camera::RenderTarget, window::PrimaryWindow};
 
 use crate::models::common_resources::{Board, BoardPointer, FontHolder, MainCamera};
 
@@ -9,7 +9,7 @@ pub struct CursorCordsPlugin;
 
 impl Plugin for CursorCordsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_to_stage(StartupStage::Startup, set_up_cursor_cords)
+        app.add_system(set_up_cursor_cords.in_base_set(StartupSet::Startup))
             .add_system(set_board_pointer_system);
         // .add_system(text_update_system);
     }
@@ -28,7 +28,7 @@ fn set_up_cursor_cords(mut commands: Commands, font_holder: Res<FontHolder>) {
                     color: Color::WHITE,
                 },
             ) // Set the alignment of the Text
-            .with_text_alignment(TextAlignment::TOP_CENTER)
+            .with_text_alignment(TextAlignment::Center)
             // Set the style of the TextBundle itself.
             .with_style(Style {
                 align_self: AlignSelf::FlexStart,
@@ -46,7 +46,7 @@ fn set_up_cursor_cords(mut commands: Commands, font_holder: Res<FontHolder>) {
 
 fn set_board_pointer_system(
     // need to get window dimensions
-    wnds: Res<Windows>,
+    wnds: Query<&Window, With<PrimaryWindow>>,
     // query to get camera transform
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     board: Res<Board>,
@@ -57,11 +57,15 @@ fn set_board_pointer_system(
     let (camera, camera_transform) = q_camera.single();
 
     // get the window that the camera is displaying to (or the primary window)
-    let wnd = if let RenderTarget::Window(id) = camera.target {
-        wnds.get(id).unwrap()
-    } else {
-        wnds.get_primary().unwrap()
+
+    let Ok(wnd) = wnds.get_single() else {
+        return;
     };
+    // let wnd = if let RenderTarget::Window(id) = camera.target {
+    //     wnds.get(id).unwrap()
+    // } else {
+    //     wnds.get_primary().unwrap()
+    // };
 
     // check if the cursor is inside the window and get its position
     if let Some(screen_pos) = wnd.cursor_position() {
