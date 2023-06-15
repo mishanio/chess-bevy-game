@@ -1,4 +1,5 @@
-use bevy::{prelude::*, render::view::visibility, text::TextLayoutInfo};
+use bevy::prelude::*;
+use bevy::text::Text2dBounds;
 
 use crate::{
     assets_helper::AssetsHelper,
@@ -175,7 +176,7 @@ fn despawn_display_turn_components(
 
 fn display_current_turn_system(
     mut q_current_text: Query<
-        (&Transform, &TextLayoutInfo),
+        (&Transform, &Text2dBounds),
         (With<CurentTurnText>, Without<CurentTurnImage>),
     >,
     mut q_current_image: Query<
@@ -186,13 +187,17 @@ fn display_current_turn_system(
     turn_image_holder: Res<TurnImageHolder>,
     board: Res<Board>,
 ) {
+
+    let (mut image, mut image_transform) = q_current_image.single_mut();
+
     let (text_transform, text_size) = q_current_text.single_mut();
     // text.sections[0].value = format!("Current move: {}", color_label);
 
-    let (mut image, mut image_transform) = q_current_image.single_mut();
+    // let offset_text_image = text_size.size.x;
+    let offset_text_image = 40.;
     *image = turn_image_holder.get_image(&move_state.current_collor);
     image_transform.translation.x =
-        text_transform.translation.x + text_size.size.x + board.image_size_scaled() / 4.;
+        text_transform.translation.x + offset_text_image + board.image_size_scaled() / 4.;
     image_transform.translation.y = text_transform.translation.y;
 }
 

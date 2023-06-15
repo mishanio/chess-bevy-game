@@ -46,7 +46,7 @@ fn main() {
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
         .add_plugin(DiscardTrayPlugin)
-        // .add_plugin(DisplayCurrentTurnPlugin)
+        .add_plugin(DisplayCurrentTurnPlugin)
         .add_plugin(UiMenuPlugin)
         .add_system(change_game_state)
         .run();
