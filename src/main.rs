@@ -32,17 +32,16 @@ fn main() {
         .insert_resource(GameState::NEW)
         .insert_resource(titles)
         .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
+            primary_window: Some(Window {
                 title: window_title,
                 // width: 1920.,
                 // height: 1080.,
                 ..default()
-            },
+            }),
             ..default()
         }))
-        .add_state(AppState::MainMenu)
-        .add_startup_system_to_stage(StartupStage::PreStartup, set_up_resources)
-        .add_startup_system_to_stage(StartupStage::PreStartup, set_up_font_resource)
+        .add_state::<AppState>()
+        .add_startup_systems((set_up_resources, set_up_font_resource).in_base_set(StartupSet::PreStartup))
         .add_plugin(ChessBoardPlugin)
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
@@ -61,12 +60,13 @@ fn set_up_resources(mut commands: Commands) {
 }
 
 fn set_up_font_resource(mut commands: Commands, assets: Res<AssetServer>) {
+    warn!("main insert FontHolder");
     commands.insert_resource(FontHolder {
         font: assets.load("fonts/FiraMono-Medium.ttf"),
     });
 }
 
-fn change_game_state(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<State<AppState>>) {
+fn change_game_state(mut keys: ResMut<Input<KeyCode>>, app_state: Res<State<AppState>>, mut next_state: ResMut<NextState<AppState>>) {
     if !keys.just_pressed(KeyCode::Escape) {
         return;
     }
@@ -75,8 +75,8 @@ fn change_game_state(mut keys: ResMut<Input<KeyCode>>, mut app_state: ResMut<Sta
     //     AppState::Game => app_state.set(AppState::MainMenu).unwrap(),
     // };
 
-    if let AppState::Game = app_state.current() {
-        app_state.set(AppState::MainMenu).unwrap();
+    if let AppState::Game = app_state.0 {
+        next_state.set(AppState::MainMenu);
     }
     keys.reset(KeyCode::Escape);
 }

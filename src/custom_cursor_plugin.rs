@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 // use crate::models::common_resources::BoardPointer;
 
@@ -11,8 +11,9 @@ pub struct CustomCursorPlugin;
 
 impl Plugin for CustomCursorPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_startup_system_to_stage(StartupStage::PreStartup, change_cursor_type)
+        app.add_startup_system(
+            change_cursor_type.in_base_set(StartupSet::PreStartup),
+        )
         // .add_startup_system_to_stage(StartupStage::PreStartup, hide_default_cursor)
         // .add_startup_system_to_stage(StartupStage::Startup, insert_custom_cursor)
         // .add_system(move_cursor)
@@ -20,9 +21,9 @@ impl Plugin for CustomCursorPlugin {
     }
 }
 
-fn change_cursor_type(mut windows: ResMut<Windows>) {
-    let window = windows.primary_mut();
-    window.set_cursor_icon(CursorIcon::Hand);
+fn change_cursor_type(mut query_window: Query<&mut Window, With<PrimaryWindow>>) {
+    let mut  window = query_window.get_single_mut().unwrap();
+    window.cursor.icon = CursorIcon::Hand;
 }
 
 // fn hide_default_cursor(mut windows: ResMut<Windows>) {

@@ -24,13 +24,9 @@ impl Plugin for DiscardTrayPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DiscardTrayHolder::default())
             .insert_resource(DiscardPiecesStore::default())
-            .add_system_set(SystemSet::on_enter(AppState::Game).with_system(set_up_resources))
-            .add_system_set(
-                SystemSet::on_update(AppState::Game).with_system(add_taken_piece_to_discard_tray),
-            )
-            .add_system_set(
-                SystemSet::on_exit(AppState::Game).with_system(despawn_discard_tray_pieces),
-            );
+            .add_system(set_up_resources.in_schedule(OnEnter(AppState::Game)))
+            .add_system(despawn_discard_tray_pieces.in_schedule(OnExit(AppState::Game)))
+            .add_system(add_taken_piece_to_discard_tray.in_set(OnUpdate(AppState::Game)));
     }
 }
 
@@ -64,7 +60,7 @@ fn despawn_discard_tray_pieces(
     mut discard_tray_holder: ResMut<DiscardTrayHolder>,
 ) {
     pieces_store.state = vec![];
-    discard_tray_holder.value = HashMap::new();
+    discard_tray_holder.as_mut().value = HashMap::new();
     for (entity, chess_piece) in q_despawn.iter() {
         pieces_store
             .state
