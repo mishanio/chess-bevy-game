@@ -28,7 +28,7 @@ fn main() {
     let titles = Titles::new(TitleLocale::RU);
     let window_title = titles.title.clone();
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
+        // .insert_resource(ClearColor(Color::rgb(0.04, 0.30, 0.40)))
         .insert_resource(GameState::NEW)
         .insert_resource(titles)
         .add_plugins(DefaultPlugins.set(WindowPlugin {

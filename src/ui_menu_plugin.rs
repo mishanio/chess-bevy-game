@@ -34,12 +34,6 @@ impl Plugin for UiMenuPlugin {
                     .run_if(in_state(AppState::MainMenu)),
             );
 
-        // app.add_system(setup_ui_menu.in_schedule(OnEnter(AppState::MainMenu)))
-        //     .add_system(despawn_ui_menu.in_schedule(OnExit(AppState::MainMenu)))
-        //     .add_systems(
-        //         (handle_ui_buttons_styles, handle_button_clicked)
-        //             .in_set(OnUpdate(AppState::MainMenu)),
-        //     );
     }
 
     fn name(&self) -> &str {
@@ -50,7 +44,7 @@ impl Plugin for UiMenuPlugin {
 fn setup_ui_menu(mut commands: Commands, font_holder: Res<FontHolder>, titles: Res<Titles>) {
     let button = ButtonBundle {
         style: Style {
-            size: Size::new(Val::Px(200.0), Val::Px(65.0)),
+            // size: Size::new(Val::Px(200.0), Val::Px(65.0)),
             margin: UiRect::all(Val::Auto),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,

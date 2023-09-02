@@ -34,11 +34,11 @@ fn set_up_cursor_cords(mut commands: Commands, font_holder: Res<FontHolder>) {
             .with_style(Style {
                 align_self: AlignSelf::FlexStart,
                 position_type: PositionType::Absolute,
-                position: UiRect {
-                    bottom: Val::Px(5.0),
-                    right: Val::Px(15.0),
-                    ..default()
-                },
+                // position: UiRect {
+                //     bottom: Val::Px(5.0),
+                //     right: Val::Px(15.0),
+                //     ..default()
+                // },
                 ..default()
             }),
         )
