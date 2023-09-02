@@ -41,7 +41,9 @@ fn main() {
             ..default()
         }))
         .add_state::<AppState>()
-        .add_startup_systems((set_up_resources, set_up_font_resource).in_base_set(StartupSet::PreStartup))
+        .add_startup_systems(
+            (set_up_resources, set_up_font_resource).in_base_set(StartupSet::PreStartup),
+        )
         .add_plugin(ChessBoardPlugin)
         .add_plugin(CursorCordsPlugin)
         .add_plugin(CustomCursorPlugin)
@@ -66,7 +68,11 @@ fn set_up_font_resource(mut commands: Commands, assets: Res<AssetServer>) {
     });
 }
 
-fn change_game_state(mut keys: ResMut<Input<KeyCode>>, app_state: Res<State<AppState>>, mut next_state: ResMut<NextState<AppState>>) {
+fn change_game_state(
+    mut keys: ResMut<Input<KeyCode>>,
+    app_state: Res<State<AppState>>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
     if !keys.just_pressed(KeyCode::Escape) {
         return;
     }

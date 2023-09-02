@@ -187,7 +187,6 @@ fn display_current_turn_system(
     turn_image_holder: Res<TurnImageHolder>,
     board: Res<Board>,
 ) {
-
     let (mut image, mut image_transform) = q_current_image.single_mut();
 
     let (text_transform, text_size) = q_current_text.single_mut();

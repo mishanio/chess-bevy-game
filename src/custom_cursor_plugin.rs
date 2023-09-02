@@ -22,7 +22,7 @@ impl Plugin for CustomCursorPlugin {
 }
 
 fn change_cursor_type(mut query_window: Query<&mut Window, With<PrimaryWindow>>) {
-    let mut  window = query_window.get_single_mut().unwrap();
+    let mut window = query_window.get_single_mut().unwrap();
     window.cursor.icon = CursorIcon::Hand;
 }
 

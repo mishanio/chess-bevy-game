@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{common_resources::CellPosition, common_chess::ChessColor};
+use super::{common_chess::ChessColor, common_resources::CellPosition};
 
 pub enum ChessCellState {
     NONE,

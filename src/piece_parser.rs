@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use crate::models::{
     chess_piece::{ChessPiece, PieceType},
-    common_chess::ChessColor, common_resources::{Board},
+    common_chess::ChessColor,
+    common_resources::Board,
 };
 
 pub struct PieceParser;
@@ -25,20 +26,17 @@ impl PieceParser {
         ]);
     }
 
-    fn reverse_color_mappings<'a>() -> HashMap<ChessColor,  &'a str> {
-        return HashMap::from([
-            (ChessColor::BLACK, "b"),
-            (ChessColor::WHITE,"w"),
-        ]);
+    fn reverse_color_mappings<'a>() -> HashMap<ChessColor, &'a str> {
+        return HashMap::from([(ChessColor::BLACK, "b"), (ChessColor::WHITE, "w")]);
     }
     fn reverse_type_mappings<'a>() -> HashMap<PieceType, &'a str> {
         return HashMap::from([
             (PieceType::PAWN, "pa"),
             (PieceType::ROOK, "ro"),
-            (PieceType::KNIGHT,"kn"),
-            (PieceType::BISHOP,"bi"),
-            (PieceType::KING,"ki"),
-            (PieceType::QUEEN,"qu"),
+            (PieceType::KNIGHT, "kn"),
+            (PieceType::BISHOP, "bi"),
+            (PieceType::KING, "ki"),
+            (PieceType::QUEEN, "qu"),
         ]);
     }
 
@@ -101,8 +99,12 @@ impl PieceParser {
             let mut line_builder = String::new();
             line_builder.push('|');
             for i in board.cell_range() {
-               let symbol = match  tiles.iter().find(|cp| cp.pos.i == i && cp.pos.j ==j) {
-                    Some(piece) => format!("{}_{}", color_mappings.get(&piece.color).unwrap(), type_mappings.get(&piece.piece_type).unwrap()),
+                let symbol = match tiles.iter().find(|cp| cp.pos.i == i && cp.pos.j == j) {
+                    Some(piece) => format!(
+                        "{}_{}",
+                        color_mappings.get(&piece.color).unwrap(),
+                        type_mappings.get(&piece.piece_type).unwrap()
+                    ),
                     None => "none".to_string(),
                 };
                 line_builder.push_str(symbol.as_str());
@@ -111,7 +113,11 @@ impl PieceParser {
             line_builder.push('\n');
             tile_map_builder.push(line_builder)
         }
-        let result: Vec<String> = tile_map_builder.iter().rev().map(|s| s.to_owned()).collect();
+        let result: Vec<String> = tile_map_builder
+            .iter()
+            .rev()
+            .map(|s| s.to_owned())
+            .collect();
         return result.join("");
     }
 }
@@ -135,7 +141,6 @@ mod run_tests {
         for p in &result[48..64] {
             assert!(p.is_some())
         }
-        
     }
     #[test]
     fn test_parse_piece() {

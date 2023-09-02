@@ -27,8 +27,11 @@ struct OnGameScreen;
 impl Plugin for UiMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup_ui_menu.in_schedule(OnEnter(AppState::MainMenu)))
-        .add_system(despawn_ui_menu.in_schedule(OnExit(AppState::MainMenu)))
-        .add_systems((handle_ui_buttons_styles, handle_button_clicked).in_set(OnUpdate(AppState::MainMenu)));
+            .add_system(despawn_ui_menu.in_schedule(OnExit(AppState::MainMenu)))
+            .add_systems(
+                (handle_ui_buttons_styles, handle_button_clicked)
+                    .in_set(OnUpdate(AppState::MainMenu)),
+            );
     }
 
     fn name(&self) -> &str {
