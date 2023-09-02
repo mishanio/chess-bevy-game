@@ -40,7 +40,7 @@ impl Plugin for ChessBoardPlugin {
         app.insert_resource(PiecesStore::default())
             .insert_resource(MoveStateStore::default())
             .add_event::<ChessPieceRemovedEvent>()
-            .add_systems(
+            .add_systems(OnEnter(AppState::Game),
                 (
                     set_up_resources,
                     set_up_chess_board_system,
@@ -48,13 +48,11 @@ impl Plugin for ChessBoardPlugin {
                     set_up_board_boarding_system,
                 )
                     .chain()
-                    .in_schedule(OnEnter(AppState::Game)),
             )
-            .add_systems(
+            .add_systems(OnExit(AppState::Game),
                 (despawn_chess_pieces, despawn_static, save_move_state)
-                    .in_schedule(OnExit(AppState::Game)),
             )
-            .add_systems(
+            .add_systems(Update, 
                 (
                     highlight_chess_piece_system,
                     calculate_chess_cell_state_system,
@@ -63,8 +61,7 @@ impl Plugin for ChessBoardPlugin {
                     set_cell_selected,
                     remove_taken_piece_system,
                     move_piece_system,
-                )
-                    .in_set(OnUpdate(AppState::Game)),
+                ).       run_if(in_state(AppState::Game))
             );
     }
 }

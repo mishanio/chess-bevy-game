@@ -26,12 +26,20 @@ struct OnGameScreen;
 
 impl Plugin for UiMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup_ui_menu.in_schedule(OnEnter(AppState::MainMenu)))
-            .add_system(despawn_ui_menu.in_schedule(OnExit(AppState::MainMenu)))
+        app.add_systems(OnEnter(AppState::MainMenu), setup_ui_menu)
+            .add_systems(OnExit(AppState::MainMenu), despawn_ui_menu)
             .add_systems(
+                Update,
                 (handle_ui_buttons_styles, handle_button_clicked)
-                    .in_set(OnUpdate(AppState::MainMenu)),
+                    .run_if(in_state(AppState::MainMenu)),
             );
+
+        // app.add_system(setup_ui_menu.in_schedule(OnEnter(AppState::MainMenu)))
+        //     .add_system(despawn_ui_menu.in_schedule(OnExit(AppState::MainMenu)))
+        //     .add_systems(
+        //         (handle_ui_buttons_styles, handle_button_clicked)
+        //             .in_set(OnUpdate(AppState::MainMenu)),
+        //     );
     }
 
     fn name(&self) -> &str {
@@ -114,7 +122,7 @@ fn handle_ui_buttons_styles(
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match interaction {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 *color = PRESSED_BUTTON.into();
             }
             Interaction::Hovered => {
@@ -134,7 +142,7 @@ fn handle_button_clicked(
     mut game_state: ResMut<GameState>,
 ) {
     for (interaction, menu_button) in new_game_interaction_query.iter() {
-        if Interaction::Clicked.eq(interaction) {
+        if Interaction::Pressed.eq(interaction) {
             match menu_button {
                 MenuButton::NewGame => {
                     *game_state = GameState::NEW;

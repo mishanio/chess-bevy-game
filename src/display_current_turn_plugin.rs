@@ -46,20 +46,33 @@ pub struct DisplayCurrentTurnPlugin;
 
 impl Plugin for DisplayCurrentTurnPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(
-            set_up_display_turn_resource_system.in_base_set(StartupSet::PreStartup),
-        )
-        // .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
-        .add_system(set_up_display_turn_components.in_schedule(OnEnter(AppState::Game)))
-        .add_system(despawn_display_turn_components.in_schedule(OnExit(AppState::Game)))
-        .add_systems(
-            (
-                display_current_turn_system,
-                display_check_state_system,
-                display_mate_state_system,
-            )
-                .in_set(OnUpdate(AppState::Game)),
-        );
+        app.add_systems(PreStartup, set_up_display_turn_resource_system)
+            .add_systems(OnEnter(AppState::Game), set_up_display_turn_components)
+            .add_systems(OnExit(AppState::Game), despawn_display_turn_components)
+            .add_systems(
+                Update,
+                (
+                    display_current_turn_system,
+                    display_check_state_system,
+                    display_mate_state_system,
+                )
+                    .run_if(in_state(AppState::Game))
+            );
+        //TODO upgrade after update to 0.11
+        // app.add_startup_system(
+        //     set_up_display_turn_resource_system.in_base_set(StartupSet::PreStartup),
+        // )
+        // // .add_startup_system_to_stage(StartupStage::Startup, set_up_display_turn_components)
+        // .add_system(set_up_display_turn_components.in_schedule(OnEnter(AppState::Game)))
+        // .add_system(despawn_display_turn_components.in_schedule(OnExit(AppState::Game)))
+        // .add_systems(Updaa
+        //     (
+        //         display_current_turn_system,
+        //         display_check_state_system,
+        //         display_mate_state_system,
+        //     )
+        //         .in_set(OnUpdate(AppState::Game)),
+        // );
     }
 }
 

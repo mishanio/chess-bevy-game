@@ -9,8 +9,8 @@ pub struct CursorCordsPlugin;
 
 impl Plugin for CursorCordsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(set_up_cursor_cords.in_base_set(StartupSet::Startup))
-            .add_system(set_board_pointer_system);
+        app.add_systems(Startup, set_up_cursor_cords)
+        .add_systems(Update, set_board_pointer_system);
         // .add_system(text_update_system);
     }
 }

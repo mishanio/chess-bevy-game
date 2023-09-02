@@ -11,9 +11,12 @@ pub struct CustomCursorPlugin;
 
 impl Plugin for CustomCursorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(
-            change_cursor_type.in_base_set(StartupSet::PreStartup),
-        )
+        app.add_systems(PreStartup, change_cursor_type)
+
+        //TODO remove after upgrade to 0.11
+        // app.add_startup_system(
+        //     change_cursor_type.in_base_set(StartupSet::PreStartup),
+        // )
         // .add_startup_system_to_stage(StartupStage::PreStartup, hide_default_cursor)
         // .add_startup_system_to_stage(StartupStage::Startup, insert_custom_cursor)
         // .add_system(move_cursor)

@@ -24,9 +24,9 @@ impl Plugin for DiscardTrayPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DiscardTrayHolder::default())
             .insert_resource(DiscardPiecesStore::default())
-            .add_system(set_up_resources.in_schedule(OnEnter(AppState::Game)))
-            .add_system(despawn_discard_tray_pieces.in_schedule(OnExit(AppState::Game)))
-            .add_system(add_taken_piece_to_discard_tray.in_set(OnUpdate(AppState::Game)));
+            .add_systems(OnEnter(AppState::Game), set_up_resources)
+            .add_systems(OnExit(AppState::Game),despawn_discard_tray_pieces)
+            .add_systems(Update, add_taken_piece_to_discard_tray.run_if(in_state(AppState::Game)));
     }
 }
 

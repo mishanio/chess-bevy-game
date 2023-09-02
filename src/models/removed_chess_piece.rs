@@ -1,10 +1,11 @@
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Event};
 
 use super::{
     chess_piece::{ChessPiece, PieceType},
     common_chess::ChessColor,
 };
 
+#[derive(Event)]
 pub struct ChessPieceRemovedEvent {
     pub chess_piece: ChessPiece,
 }

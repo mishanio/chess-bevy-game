@@ -41,16 +41,14 @@ fn main() {
             ..default()
         }))
         .add_state::<AppState>()
-        .add_startup_systems(
-            (set_up_resources, set_up_font_resource).in_base_set(StartupSet::PreStartup),
-        )
-        .add_plugin(ChessBoardPlugin)
-        .add_plugin(CursorCordsPlugin)
-        .add_plugin(CustomCursorPlugin)
-        .add_plugin(DiscardTrayPlugin)
-        .add_plugin(DisplayCurrentTurnPlugin)
-        .add_plugin(UiMenuPlugin)
-        .add_system(change_game_state)
+        .add_systems(PreStartup, (set_up_resources, set_up_font_resource))
+        .add_plugins(ChessBoardPlugin)
+        .add_plugins(CursorCordsPlugin)
+        .add_plugins(CustomCursorPlugin)
+        .add_plugins(DiscardTrayPlugin)
+        .add_plugins(DisplayCurrentTurnPlugin)
+        .add_plugins(UiMenuPlugin)
+        .add_systems(Update, change_game_state)
         .run();
 }
 
@@ -81,7 +79,7 @@ fn change_game_state(
     //     AppState::Game => app_state.set(AppState::MainMenu).unwrap(),
     // };
 
-    if let AppState::Game = app_state.0 {
+    if let AppState::Game = app_state.get() {
         next_state.set(AppState::MainMenu);
     }
     keys.reset(KeyCode::Escape);
